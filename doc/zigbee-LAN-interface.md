@@ -8,7 +8,7 @@ device
 
 ```javascript
 {
-  id: '123',
+  id: 123,
   type: 'router',
   apps: [
     {endPoint: 8, type: 'lamp'},
@@ -20,7 +20,7 @@ device
 
 ```javascript
 {
-  id: '123'
+  id: 123
 }
 ```
 
@@ -28,10 +28,10 @@ device
 
 ```javascript
 {
-  id: '123',
+  id: 123,
   ieee: '....',
   apps: [
-    {endPoint: 8, type: '...', /* other properties */ }
+    {endPoint: 8, type: '...', payload: {} }
   ]
 }
 ```
