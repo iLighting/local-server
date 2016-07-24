@@ -12,6 +12,10 @@ const deviceSchema = new Schema({
     $type: Number,
     required: [true, 'device id (网络地址) 是必须的']
   },
+  ieee: {
+    $type: String,
+    required: true
+  },
   type: {
     $type: String,
     required: [true, '设备类型是必须的'],
@@ -26,6 +30,9 @@ const deviceSchema = new Schema({
   minimize: false
 });
 deviceSchema.name = 'Device';
+deviceSchema.statics.findOneById = function(id, cb) {
+  this.find({_id: id}, cb);
+}
 deviceSchema.methods.findApps = function(cb) {
   const self = this;
   self.model(appSchema.name).find({device: self._id}, cb);

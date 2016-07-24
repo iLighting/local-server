@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www",
-    "test": "mocha --compilers js:babel-core/register --recursive test/"
+    "start": "node ./bin/www.js",
+    "test": "mocha --recursive test/"
   },
   "dependencies": {
     "babel-eslint": "^6.1.2",
@@ -22,6 +22,9 @@
     "mocha": "^2.5.3",
     "mongoose": "^4.5.4",
     "morgan": "~1.7.0",
+    "redux": "^3.5.2",
+    "redux-actions": "^0.10.1",
+    "redux-saga": "^0.11.0",
     "serve-favicon": "~2.3.0"
   },
   "devDependencies": {
