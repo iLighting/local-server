@@ -1,3 +1,5 @@
-const handlerActions = require('redux-actions').handlerActions;
+const { handleActions } = require('redux-actions');
 
-module.exports = handlerActions({})
+module.exports = handleActions({
+  
+}, {})

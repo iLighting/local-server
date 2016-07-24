@@ -30,8 +30,8 @@ const deviceSchema = new Schema({
   minimize: false
 });
 deviceSchema.name = 'Device';
-deviceSchema.statics.findOneById = function(id, cb) {
-  this.find({_id: id}, cb);
+deviceSchema.query.byId = function(id) {
+  return this.findOne({_id: id});
 }
 deviceSchema.methods.findApps = function(cb) {
   const self = this;

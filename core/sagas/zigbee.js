@@ -8,7 +8,7 @@ const watchDeviceJoin = function * () {
   yield takeEvery('zigbee/device/join', function * (action) {
     const {type, payload} = action;
     try {
-      let device = yield model.Device.findOneById(payload.id);
+      let device = yield model.Device.find().byId(payload.id).exec();
       if (!device) {
         device = yield model.Device.create({
           _id: payload.id,
@@ -16,7 +16,7 @@ const watchDeviceJoin = function * () {
           type: payload.type
         });
       }
-      yield put(actions['zigbee/device/join.success'](device.toObject()));
+      yield put(actions['zigbee/device/join.success'](device.id));
     } catch(e) {
       yield put(actions['zigbee/device/join.failure'](e));
     }
