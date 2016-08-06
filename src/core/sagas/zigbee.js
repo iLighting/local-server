@@ -18,7 +18,19 @@ const watchDeviceJoin = function * () {
       }
       yield put(actions['zigbee/device/join.success'](device.id));
     } catch(e) {
-      yield put(actions['zigbee/device/join.failure'](e));
+      yield put(actions['zigbee/device/join.failure'](payload.id, e));
+    }
+  });
+}
+
+const watchDeviceLeave = function * () {
+  yield takeEvery('zigbee/device/leave', function * (action) {
+    const {type, payload} = action;
+    try {
+      yield model.Device.find().byId(payload.id).remove().exec();
+      yield put(actions['zigbee/device/leave.success'](device.id));
+    } catch(e) {
+      yield put(actions['zigbee/device/leave.failure'](payload.id, e));
     }
   });
 }
@@ -26,5 +38,6 @@ const watchDeviceJoin = function * () {
 module.exports = function * () {
   yield [
     fork(watchDeviceJoin),
+    fork(watchDeviceLeave),
   ]
 }

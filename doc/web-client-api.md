@@ -22,6 +22,7 @@ query:
   payload: [
     {
       id: 123,
+      ieee: 'dddd',
       type: 'router',
       apps: [{endPoint: 8, type: 'lamp'}, /* and so on */]
     },
@@ -38,6 +39,7 @@ query:
   message: 'ok',
   payload: {
     id: 123,
+    ieee: 'xxx',
     type: 'router',
     apps: [
       {
