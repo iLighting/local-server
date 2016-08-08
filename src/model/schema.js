@@ -65,7 +65,7 @@ const appSchema = new Schema({
   typeKey: '$type',
   minimize: false
 });
-appSchema.name = 'AppLamp';
+appSchema.name = 'App';
 // app's validator
 appSchema.pre('validate', function(next) {
   const self = this;
@@ -86,6 +86,6 @@ appSchema.pre('validate', function(next) {
 // -----------------
 
 module.exports = {
-  deviceSchema,
-  appSchema
+  [deviceSchema.name]: deviceSchema,
+  [appSchema.name]: appSchema
 }

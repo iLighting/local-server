@@ -1,3 +1,4 @@
+const expect = require('chai').expect;
 const takeEvery = require('redux-saga').takeEvery;
 const { call, put, fork, select } = require('redux-saga/effects');
 
@@ -30,13 +31,15 @@ const watchAll = function * () {
 const exp = function * () {
   yield [
     fork(watchAll),
+    fork(require('./log')),
     fork(require('./zigbee')),
     fork(require('./client')),
-    fork(require('./log'))
+    fork(require('./db'))
   ]
 }
 
 exp.wait = function (typePartten) {
+  expect(typePartten).to.be.a('regexp');
   const pro = new Promise((resolve, reject) => {
     waitList.push([typePartten, resolve, reject]);
   });

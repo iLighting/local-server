@@ -18,6 +18,12 @@ store.doAction = function (name, ...args) {
   return store.dispatch(actions[name](...args))
 }
 
+store.doThenWait = function (type, name, ...args) {
+  let p = saga.wait(type);
+  store.dispatch(actions[name](...args));
+  return p;
+}
+
 store.run = function () {
   sagaMdw.run(saga);
 }
