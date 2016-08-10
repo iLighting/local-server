@@ -8,9 +8,9 @@ const ObjectId = Schema.Types.ObjectId;
 // ---------------------------------------
 
 const deviceSchema = new Schema({
-  _id: {
+  nwk: {
     $type: Number,
-    required: [true, 'device id (网络地址) 是必须的']
+    required: [true, '网络地址是必须的']
   },
   ieee: {
     $type: String,
@@ -23,19 +23,20 @@ const deviceSchema = new Schema({
   }
 }, {
   timestamps: true,
-  toObject: true,
-  toJSON: true,
+  toObject: {
+    getters: true,
+    virtuals: true,
+    minimize: false,
+    retainKeyOrder: true,
+  },
+  toJSON: this.toObject,
   strict: true,
   typeKey: '$type',
-  minimize: false
+  minimize: false,
 });
 deviceSchema.name = 'Device';
-deviceSchema.query.byId = function(id) {
-  return this.findOne({_id: id});
-}
-deviceSchema.methods.findApps = function(cb) {
-  const self = this;
-  self.model(appSchema.name).find({device: self._id}, cb);
+deviceSchema.query.byNwk = function(nwk) {
+  return this.findOne({nwk});
 }
 
 // app
@@ -59,11 +60,16 @@ const appSchema = new Schema({
   }
 }, {
   timestamps: true,
-  toObject: true,
-  toJSON: true,
+  toObject: {
+    getters: true,
+    virtuals: true,
+    minimize: false,
+    retainKeyOrder: true,
+  },
+  toJSON: this.toObject,
   strict: true,
   typeKey: '$type',
-  minimize: false
+  minimize: false,
 });
 appSchema.name = 'App';
 // app's validator

@@ -4,7 +4,7 @@ const store = require('../core/store');
 const Msg = require('../utils/msg');
 
 router.post('/zigbee/device/join', function * (next) {
-  const dev = bodyPase.json(this);
+  const dev = yield bodyPase.json(this);
   const { type, payload, err } = yield store.doThenWait(
     /zigbee\/device\/join\.(success|failure)/,
     'zigbee/device/join',

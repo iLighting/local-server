@@ -9,17 +9,17 @@ const watchDeviceJoin = function * () {
     const {type, payload} = action;
     try {
       const { Device, App } = store.getState().db.models;
-      let device = yield Device.find().byId(payload.id).exec();
+      let device = yield Device.find().byNwk(payload.nwk).exec();
       if (!device) {
         device = yield Device.create({
-          _id: payload.id,
+          nwk: payload.nwk,
           ieee: payload.ieee,
           type: payload.type
         });
       }
-      yield put(actions['zigbee/device/join.success'](device.id));
+      yield put(actions['zigbee/device/join.success'](device.nwk));
     } catch(e) {
-      yield put(actions['zigbee/device/join.failure'](payload.id, e));
+      yield put(actions['zigbee/device/join.failure'](payload.nwk, e));
     }
   });
 }
@@ -29,10 +29,10 @@ const watchDeviceLeave = function * () {
     const {type, payload} = action;
     try {
       const { Device, App } = store.getState().db.models;
-      yield Device.find().byId(payload.id).remove().exec();
-      yield put(actions['zigbee/device/leave.success'](device.id));
+      yield Device.find().byNwk(payload.nwk).remove().exec();
+      yield put(actions['zigbee/device/leave.success'](device.nwk));
     } catch(e) {
-      yield put(actions['zigbee/device/leave.failure'](payload.id, e));
+      yield put(actions['zigbee/device/leave.failure'](payload.nwk, e));
     }
   });
 }

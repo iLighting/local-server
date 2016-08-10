@@ -18,7 +18,7 @@ query:
 
 ```javascript
 {
-  message: 'ok',
+  type: 'ok',
   payload: [
     {
       id: 123,
@@ -36,7 +36,7 @@ query:
 
 ```javascript
 {
-  message: 'ok',
+  type: 'ok',
   payload: {
     id: 123,
     ieee: 'xxx',
@@ -59,7 +59,7 @@ query:
 
 ```javascript
 {
-  message: 'ok',
+  type: 'ok',
   payload: {
     endPoint: 8,
     type: 'lamp',
@@ -87,7 +87,7 @@ query:
 
 ```javascript
 {
-  message: 'ok',
+  type: 'ok',
   payload: [
     {
       device: 123,

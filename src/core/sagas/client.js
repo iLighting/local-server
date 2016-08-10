@@ -15,7 +15,7 @@ const watchDeviceGetOne = function * () {
         let apps = yield App
           .find()
           .where('device')
-          .equals(dev.id)
+          .equals(dev.nwk)
           .exec();
         dev.apps = apps;
         yield put(actions['client/device/get/one.success'](dev));
