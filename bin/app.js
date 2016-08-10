@@ -1,5 +1,5 @@
 const co = require('co');
-const app = require('../src/app');
+const server = require('../src/server');
 const store = require('../src/core/store');
 const config = require('./config');
 
@@ -34,8 +34,7 @@ co(function * () {
 
   // listen
   {
-    const { server } = config;
-    app.listen(server.port);
+    server.listen(config.server.port);
   }
 
 })

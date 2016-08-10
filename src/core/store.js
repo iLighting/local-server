@@ -14,6 +14,7 @@ const store = xCreateStore(
   {}
 );
 
+// 已弃用
 store.doAction = function (name, ...args) {
   return store.dispatch(actions[name](...args))
 }
