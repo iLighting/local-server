@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/app.js",
-    "dev": "nodemon --watch ./src --watch ./bin ./bin/app.js",
-    "debug": "./node_modules/.bin/node-debug ./bin/app.js",
+    "launch": "node ./bin/server.js",
+    "dev": "nodemon --watch ./src --watch ./bin ./bin/server.js",
+    "debug": "./node_modules/.bin/node-debug ./bin/server.js",
     "test": "mocha --recursive test/"
   },
   "dependencies": {

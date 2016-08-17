@@ -15,7 +15,7 @@ describe('API测试', () => {
   it('添加一个设备', done => {
     const did = Math.floor(Math.random()*10000);
     req()
-      .post('/api/zigbee/device/join')
+      .post('/api/zigbee/device')
       .send(JSON.stringify({
         nwk: did,
         ieee: 'xxx',

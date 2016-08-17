@@ -1,5 +1,5 @@
 const router = require('koa-router')();
-const store = require('../core/store');
+const store = require('../store');
 const Msg = require('../utils/msg');
 
 router.get('/device/:nwk', function * (next) {
