@@ -21,7 +21,7 @@ query:
   type: 'ok',
   payload: [
     {
-      id: 123,
+      nwk: 123,
       ieee: 'dddd',
       type: 'router',
       apps: [{endPoint: 8, type: 'lamp'}, /* and so on */]
@@ -30,7 +30,7 @@ query:
   ]
 }
 ```
-### `/api/device/:id`
+### `/api/device/:nwk`
 
 **GET**
 
@@ -38,7 +38,7 @@ query:
 {
   type: 'ok',
   payload: {
-    id: 123,
+    nwk: 123,
     ieee: 'xxx',
     type: 'router',
     apps: [
@@ -53,7 +53,7 @@ query:
 }
 ```
 
-### `/api/device/:id/:ep`
+### `/api/device/:nwk/:ep`
 
 **GET**
 
