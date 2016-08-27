@@ -1,22 +1,19 @@
-const app = require('./app');
-const { init:initDb } = require('./db');
+const co = require('co');
+const { sys:sysLog } = require('./utils/log');
 
-const launch = function (config) {
-  return new Promise((resolve, reject) => {
-    try {
-      // 初始化数据库
-      const { db, models } = initDb(config.db.path);
-      // 初始化app
-      app.context.mount = {};
-      app.context.mount.db = db;
-      app.context.mount.models = models;
-      app.listen(config.server.port);
-      console.log('应用启动');
-      console.log(config);
-    } catch (e) {
-      reject(e);
-    }
-  })
-}
+const launch = co.wrap(function * (config) {
+  // 初始化数据库
+  const { init:initDb } = require('./db');
+  const { db, models } = yield initDb(config.db.path);
+  // 初始化APP
+  const app = require('./app');
+  app.context.mount = {};
+  app.context.mount.db = db;
+  app.context.mount.models = models;
+  app.listen(config.server.port);
+  sysLog.mark('应用启动成功，端口号 %s', config.server.port);
+  return { db, models, app };
+});
+
 
 module.exports = launch;

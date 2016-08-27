@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const schemaMap = require('./model/schema');
+const { db: dbLog } = require('./utils/log');
 
 let db;
 let models;
@@ -7,16 +8,27 @@ let models;
 mongoose.Promise = global.Promise;
 
 const init = function (path) {
-  if (!db) {
-    mongoose.connect(path);
-    db = mongoose.createConnection(path);
-    // 创建model
-    models = {};
-    for (let name in schemaMap) {
-      models[name] = mongoose.model(name, schemaMap[name])
+  dbLog.debug('初始化数据库', path);
+  return new Promise((resolve, reject) => {
+    if (!db) {
+      mongoose.connect(path, err => {
+        dbLog.trace('数据库首次连接', path);
+        if (err) {
+          dbLog.error(err.toString());
+          reject(err);
+        }
+        db = mongoose.createConnection(path);
+        // 创建model
+        models = {};
+        Object.keys(schemaMap).forEach(name => {
+          models[name] = mongoose.model(name, schemaMap[name]);
+        });
+        resolve({db, models});
+      });
+    } else {
+      resolve({db, models});
     }
-  }
-  return {db, models};
+  });
 }
 
 const getDb = function () {

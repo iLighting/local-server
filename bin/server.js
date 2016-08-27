@@ -5,7 +5,7 @@ global.__config = config;
 
 launch(config)
   .then(data => {
-    const { store, server } = data;
+    const { db, models, app } = data;
     console.log('启动完成');
     console.log(config);
   })
