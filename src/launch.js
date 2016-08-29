@@ -1,10 +1,23 @@
 const co = require('co');
 const { sys:sysLog } = require('./utils/log');
 
+const mockDb = function * (db, models) {
+  // 清空数据库
+  const { Device, App } = models;
+  yield Device.remove().exec();
+  yield App.remove().exec();
+  const mockDate = require('./mock/db')();
+  const { deviceJoin } = require('./libs/zigbee');
+  yield mockDate.map(devReq => deviceJoin(devReq));
+};
+
 const launch = co.wrap(function * (config) {
   // 初始化数据库
   const { init:initDb } = require('./db');
   const { db, models } = yield initDb(config.db.path);
+  // mock数据库
+  yield mockDb(db, models);
+  sysLog.debug('mock数据库');
   // 初始化APP
   const app = require('./app');
   app.context.mount = {};

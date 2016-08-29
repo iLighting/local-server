@@ -1,12 +1,17 @@
+/**
+ * @module
+ */
+
 const expect = require('chai').expect;
 
 /**
  * 构造client消息体
- * @param  {Any} payload 负载
- * @param  {Error} err 异常
+ * @constructor
+ * @param  {*} payload 负载
+ * @param  {Error} [err] - 异常
  * @return {Object} 构造好的消息体
  */
-module.exports = function (payload, err) {
+function Msg(payload, err) {
   this.type = 'ok';
   this.payload = payload;
   if (err) {
@@ -14,3 +19,5 @@ module.exports = function (payload, err) {
     this.err = err.toString();
   }
 }
+
+module.exports = Msg;

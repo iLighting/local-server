@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const schemaMap = require('./model/schema');
+const schemaMap = require('./schema');
 const { db: dbLog } = require('./utils/log');
 
 let db;

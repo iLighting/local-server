@@ -20,6 +20,9 @@ const deviceSchema = new Schema({
     $type: String,
     required: [true, '设备类型是必须的'],
     enum: ['router', 'endDevice', 'coordinator']
+  },
+  name: {
+    $type: String,
   }
 }, {
   timestamps: true,
@@ -37,7 +40,7 @@ const deviceSchema = new Schema({
 deviceSchema.name = 'Device';
 deviceSchema.query.byNwk = function(nwk) {
   return this.findOne({nwk});
-}
+};
 
 // app
 // ---------------------------------------
@@ -57,6 +60,9 @@ const appSchema = new Schema({
   payload: {
     $type: Schema.Types.Mixed,
     default: {}
+  },
+  name: {
+    $type: String,
   }
 }, {
   timestamps: true,
@@ -80,13 +86,20 @@ appSchema.pre('validate', function(next) {
     try {
       expect(payload).to.have.property('level');
       expect(payload.level).to.be.a('number');
-      expect(payload.level).to.be.within(0,255);
+      expect(payload.level).to.be.within(0,100);
     } catch(e) {
       next(e);
     }
   }
   next();
 });
+// query helper
+appSchema.query.byNwk = function (nwk) {
+  return this.find({ device: nwk, });
+};
+appSchema.query.byNwkEp = function (nwk, ep) {
+  return this.findOne({ device: nwk, endPoint: ep});
+};
 
 // export
 // -----------------
@@ -94,4 +107,4 @@ appSchema.pre('validate', function(next) {
 module.exports = {
   [deviceSchema.name]: deviceSchema,
   [appSchema.name]: appSchema
-}
+};
