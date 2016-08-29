@@ -4,7 +4,6 @@
 
 const { Writable } = require('stream');
 const { SOF, genFCS, isAreq } = require('../utils/mt');
-const Serial = require('./serial');
 const { transfer: log } = require('../utils/log');
 
 /**
@@ -17,10 +16,11 @@ const { transfer: log } = require('../utils/log');
 class Transfer extends Writable {
   constructor(props) {
     super(props);
+    this._tempChunk = null;
     // serial data cache
     this._cache = new Buffer(0);
     this._frame = {};
-    this._serial = new Serial();
+    this._serial = require('./serial');
     this._serial.on('data', this.handleSerialData.bind(this));
     this.on('frame', this.handleAreq.bind(this));
   }
@@ -79,17 +79,9 @@ class Transfer extends Writable {
     this._cache = new Buffer(0);
     this._frame = {};
   }
-
-  /**
-   * 不可信地发送指令帧。当收到srsp时，认为发送成功。注意**srsp本身可能为失败状态**。
-   * @param {Frame} mtFrame
-   * @param encoding
-   * @param callback
-   * @private
-   * @see parseSrsp
-   */
-  _write(mtFrame, encoding, callback) {
-    this._serial.write(mtFrame.dump(), err => {
+  _write(chunk, encoding, callback) {
+    const mtFrame = this._tempChunk;
+    this._serial.write(chunk, err => {
       if (err) { callback(err) } else {
         this._serial.drain(err => {
           if (err) { callback(err) } else {
@@ -107,7 +99,7 @@ class Transfer extends Writable {
                  * @see event:frame
                  */
                 this.emit('srsp', srsp);
-                callback();
+                callback(null, srsp);
               } else {
                 const err = new Error(`${mtFrame.name}收到不对应的SRSP`);
                 callback(err)
@@ -117,6 +109,21 @@ class Transfer extends Writable {
         })
       }
     })
+  }
+  /**
+   * 此处改写`write`方法，以便能接受Frame类型的chunk。
+   *
+   * 不可信地发送指令帧。当收到srsp时，认为发送成功。注意**srsp本身可能为失败状态**。
+   * @param {Frame} chunk
+   * @param encoding
+   * @param callback
+   * @private
+   * @callback {Object} callback
+   * @see parseSrsp
+   */
+  write(chunk, encoding, callback) {
+    this._tempChunk = chunk;
+    super.write(chunk.dump(), encoding, callback);
   }
 }
 

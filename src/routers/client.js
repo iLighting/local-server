@@ -19,6 +19,7 @@
 const { expect } = require('chai');
 const router = require('koa-router')();
 const body = require('co-body');
+const { app: log } = require('../utils/log');
 const _ = require('lodash');
 const Msg = require('../utils/msg');
 const clientApi = require('../libs/client');
@@ -51,6 +52,7 @@ router.get(`${apiPrefix}/device/nwk/:nwk`, function * (next) {
     }
     this.body = new Msg(devObj);
   } catch (e) {
+    log.error(e);
     this.body = new Msg(dbQuery, e);
   }
 });
@@ -70,6 +72,7 @@ router.get(`${apiPrefix}/device/nwk/:nwk/ep/:ep`, function * (next) {
     if (!epApp) throw new Error('端口应用未找到');
     this.body = new Msg(epApp.toObject());
   } catch (e) {
+    log.error(e);
     this.body = new Msg({nwk, ep}, e);
   }
 });
@@ -88,6 +91,7 @@ router.put(`${apiPrefix}/device/nwk/:nwk/ep/:ep`, function * (next) {
       'device', 'endPoint', 'type', 'name', 'payload',
     ]));
   } catch (e) {
+    log.error(e);
     this.body = new Msg({nwk, ep}, e);
   }
 });
@@ -107,6 +111,7 @@ router.get(`${apiPrefix}/app/type/:type`, function * (next) {
     }
     this.body = new Msg(apps);
   } catch (e) {
+    log.error(e);
     this.body = new Msg({type}, e);
   }
 });

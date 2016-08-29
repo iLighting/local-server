@@ -55,7 +55,7 @@ const appSchema = new Schema({
   type: {
     $type: String,
     required: true,
-    enum: ['lamp', 'sensor-light']
+    enum: ['lamp', 'gray-lamp', 'switch', 'gray-switch', 'light-sensor']
   },
   payload: {
     $type: Schema.Types.Mixed,
@@ -82,7 +82,7 @@ appSchema.name = 'App';
 appSchema.pre('validate', function(next) {
   const self = this;
   const {endPoint, type, payload} = self;
-  if (type=='lamp') {
+  if (type=='lamp' || type=='gray-lamp') {
     try {
       expect(payload).to.have.property('level');
       expect(payload.level).to.be.a('number');

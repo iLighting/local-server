@@ -2,18 +2,17 @@
  * @module
  */
 
-const { Duplex } = require('stream');
+const { Writable } = require('stream');
+const { serial: log } = require('../utils/log');
 
-
-class Serail extends Duplex {
+class Serial extends Writable {
   _write(chunk, encoding, callback) {
-    console.log(chunk);
+    log.trace(chunk);
     callback();
   }
-  _read(size) {
-    this.push('hello')
+  drain(callback) {
+    callback(null);
   }
 }
 
-module.exports = Serail;
-
+module.exports = new Serial();

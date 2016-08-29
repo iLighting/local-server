@@ -35,7 +35,7 @@ const onOfLamp = {
   turn(nwk, ep, x) {
     const turnCmdId = 0;
     const msg = Buffer.from([turnCmdId, +x]);
-    return AppMsg(msgEp, nwk, ep, this.clusterId, msg);
+    return new AppMsg(msgEp, nwk, ep, this.clusterId, msg);
   }
 };
 

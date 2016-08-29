@@ -12,21 +12,10 @@ log4js.configure({
 });
 
 module.exports = {
-  /**
-   * logger for client
-   */
-  client: log4js.getLogger('client'),
-  /**
-   * logger for zigbee
-   */
-  zigbee: log4js.getLogger('zigbee'),
-  /**
-   * logger for db
-   */
   db: log4js.getLogger('db'),
-  /**
-   * logger for system
-   */
   sys: log4js.getLogger('sys'),
   transfer: log4js.getLogger('transfer'),
+  app: log4js.getLogger('app'),
+  serial: log4js.getLogger('serial'),
+  client: log4js.getLogger('client'),
 };
