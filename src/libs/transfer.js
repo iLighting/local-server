@@ -3,8 +3,9 @@
  */
 
 const { Writable } = require('stream');
-const { SOF, genFCS, isAreq } = require('../utils/mt');
+const { SOF, genFCS, parseFrame, isAreq, shiftFrameFromBuf } = require('../utils/mt');
 const { transfer: log } = require('../utils/log');
+
 
 /**
  * @fires sreq
@@ -19,7 +20,6 @@ class Transfer extends Writable {
     this._tempChunk = null;
     // serial data cache
     this._cache = new Buffer(0);
-    this._frame = {};
     this._serial = require('./serial');
     this._serial.on('data', this._handleSerialData.bind(this));
     this.on('frame', this._dispatchFrame.bind(this));
@@ -66,51 +66,25 @@ class Transfer extends Writable {
   }
   _handleSerialData(chunk) {
     this._cache = Buffer.concat([this._cache, chunk]);
-    // first SOF
-    const sofIndex = this._cache.indexOf(SOF);
-    if (sofIndex < 0) {
-      // clear buf
-      this._cache = new Buffer(0);
-      return
+    let frameBuf = new Buffer(0);
+    let restBuf = this._cache;
+    let restEnough = true;
+    while (restEnough) {
+      [frameBuf, restBuf, restEnough] = shiftFrameFromBuf(restBuf);
+      if (frameBuf.length > 0) {
+        const frameObj = parseFrame(frameBuf);
+        log.trace('got frame', frameBuf, '\n', frameObj);
+        /**
+         * @event frame
+         *
+         * @type {Buffer}
+         * @type {Object}
+         */
+        this.emit('frame', Buffer.from(frameBuf), frameObj);
+      }
     }
-    this._cache = this._cache.slice(sofIndex);
-    this._frame.sof = SOF;
-    // cache at least 4 bytes (SOF + LEN + CMD0 + CMD1)
-    if (this._cache.length < 4) { return }
-    // get LEN
-    this._frame.dataLen = this._cache.readUInt8(1);
-    // get cmd
-    this._frame.cmd0 = this._cache.readUInt8(2);
-    this._frame.cmd1 = this._cache.readUInt8(3);
-    // cache last dataLen + FCS
-    if (this._cache.length < (4 + this._frame.dataLen + 1)) { return }
-    // check FCS (LEN -> DATA)
-    this._frame.fcs = this._cache.readUInt8(this._cache.length-1);
-    if (
-      genFCS(this._cache.slice(1, this._cache.length-1)) != this._frame.fcs
-    ) { return }
-    // copy data
-    this._frame.data = new Buffer(this._frame.dataLen);
-    this._cache.copy(this._frame.data, 0, 4, 4+this._frame.dataLen);
-    log.trace('got frame', this._cache, '\n', this._frame);
-    /**
-     * @event frame
-     *
-     * @type {Buffer} - origin frame bytes
-     *
-     * @type {Object}
-     * @property {Number} sof - SOF
-     * @property {Number} dataLen
-     * @property {Number} cmd0
-     * @property {Number} cmd1
-     * @property {Buffer} data
-     * @property {Number} fcs - FCS
-     */
-    const parsed = Object.assign({}, this._frame);
-    this.emit('frame', Buffer.from(this._cache), parsed );
-    // reset
-    this._cache = new Buffer(0);
-    this._frame = {};
+    // 剩余长度不足
+    this._cache = restBuf;
   }
   _write(chunk, encoding, callback) {
     const mtFrame = this._tempChunk;

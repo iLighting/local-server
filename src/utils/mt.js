@@ -152,6 +152,54 @@ function parseSrsp (srsp) {
 }
 
 /**
+ * 从队首弹出一个指令帧。首字节必须是SOF。
+ * @param {Buffer} targetBuf
+ * @return {[Buffer, Buffer, boolean]} 指令帧buffer、剩余部分buffer、剩余长度足够？
+ * @throws {Error} - 首字节必须是SOF
+ * @private
+ */
+function _shiftFrameFromBuf(targetBuf) {
+  if (targetBuf.readUInt8(0) != SOF) {
+    throw new Error('首字节必须是SOF');
+  }
+  if (targetBuf.length < 5) {
+    // 长度不足，则返回
+    return [new Buffer(0), targetBuf, false];
+  }
+  let dataLen = targetBuf.readUInt8(1);
+  const frameBuf = targetBuf.slice(0, 4+dataLen+1);
+  const restBuf = targetBuf.slice(4+dataLen+1);
+  // FCS校验
+  const frameFcs = frameBuf.readUInt8(frameBuf.length - 1);
+  const frameFcsCalc = _genFcs(frameBuf.slice(1, frameBuf.length-1));
+  if (frameFcs != frameFcsCalc) {
+    // 校验失败，则舍弃校验失败的区段
+    return [new Buffer(0), restBuf, restBuf.length >= 5];
+  }
+  return [frameBuf, restBuf, restBuf.length >=5 ];
+}
+
+/**
+ * 从队首弹出一个指令帧。SOF之前的字节会被忽略。
+ * @param {Buffer} buf
+ * @return {[Buffer, Buffer, boolean]} 指令帧buffer、剩余部分buffer、剩余长度足够？
+ */
+function shiftFrameFromBuf(buf) {
+  const sofIndex = buf.indexOf(SOF);
+  if (sofIndex < 0) {
+    return [new Buffer(0), buf];
+  }
+  // 舍弃SOF之前的字节
+  const targetBuf = buf.slice(sofIndex);
+  let frameBuf = new Buffer(0), restBuf = targetBuf, restEnough = true;
+  while (restEnough) {
+    [frameBuf, restBuf, restEnough] = _shiftFrameFromBuf(restBuf);
+    if (frameBuf.length > 0) { break }
+  }
+  return [frameBuf, restBuf, restEnough];
+}
+
+/**
  * @typedef {FrameBase} Frame
  */
 class FrameBase {
@@ -273,6 +321,7 @@ module.exports = {
   parseSrsp,
   isFrameIns,
   isAreq,
+  shiftFrameFromBuf,
   SysPing,
   ZdoSecDeviceRemove,
   AppMsg,
