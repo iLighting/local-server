@@ -153,8 +153,11 @@ function parseSrsp (srsp) {
 
 /**
  * 从队首弹出一个指令帧。首字节必须是SOF。
+ *
+ * @description  返回：[指令帧buffer、剩余部分buffer、剩余长度足够]
+ *
  * @param {Buffer} targetBuf
- * @return {[Buffer, Buffer, boolean]} 指令帧buffer、剩余部分buffer、剩余长度足够？
+ * @return {Array}
  * @throws {Error} - 首字节必须是SOF
  * @private
  */
@@ -181,8 +184,11 @@ function _shiftFrameFromBuf(targetBuf) {
 
 /**
  * 从队首弹出一个指令帧。SOF之前的字节会被忽略。
+ *
+ * @description  返回：[指令帧buffer、剩余部分buffer、剩余长度足够]
+ *
  * @param {Buffer} buf
- * @return {[Buffer, Buffer, boolean]} 指令帧buffer、剩余部分buffer、剩余长度足够？
+ * @return {Array}
  */
 function shiftFrameFromBuf(buf) {
   const sofIndex = buf.indexOf(SOF);
