@@ -14,4 +14,8 @@ app.use(function * (next) {
   this.body = 'hello'
 });
 
+app.on('error', function (err, ctx) {
+  log.error('未捕获的错误', err, ctx)
+});
+
 module.exports = app;

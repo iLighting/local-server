@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: routers/client.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: routers/client.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module
+ *
+ * @description
+ *
+ * ### `/api/device/nwk/:nwk`
+ * - `GET`
+ *
+ * ### `/api/device/nwk/:nwk/ep/:ep`
+ * #### `GET`
+ * #### `PUT`
+ * 修改指定app。返回修改后的app。
+ *
+ * 按字段修改，未put的字段保持不变。当前只允许修改`name`和`payload`。
+ *
+ * ### `/api/app/:type`
+ */
+
+const { expect } = require('chai');
+const router = require('koa-router')();
+const body = require('co-body');
+const { app: log } = require('../utils/log');
+const _ = require('lodash');
+const Msg = require('../utils/msg');
+const clientApi = require('../libs/client');
+
+// api 接口
+// -------------------------
+
+const apiPrefix = '/api';
+
+router.get(`${apiPrefix}/device/nwk/:nwk`, function * (next) {
+  const nwk = parseInt(this.params.nwk, 10);
+  const dbQuery = {nwk};
+  const { Device, App } = this.mount.models;
+  try {
+    let devObj = {};
+    const dev = yield Device
+      .findOne(dbQuery)
+      .select('nwk ieee type name')
+      .exec();
+    Object.assign(devObj, dev.toObject());
+    if (dev) {
+      let apps = yield App
+        .find()
+        .where('device').equals(dev.nwk)
+        .select('device endPoint type name')
+        .exec();
+      devObj.apps = apps.map(app => app.toObject());
+    } else {
+      throw new Error('设备未找到');
+    }
+    this.body = new Msg(devObj);
+  } catch (e) {
+    log.error(e);
+    this.body = new Msg(dbQuery, e);
+  }
+});
+
+router.get(`${apiPrefix}/device/nwk/:nwk/ep/:ep`, function * (next) {
+  const nwk = parseInt(this.params.nwk, 10);
+  const ep = parseInt(this.params.ep, 10);
+  const { App } = this.mount.models;
+  try {
+    let epApp = yield App
+      .findOne({
+        device: nwk,
+        endPoint: ep
+      })
+      .select('device endPoint type name payload')
+      .exec();
+    if (!epApp) throw new Error('端口应用未找到');
+    this.body = new Msg(epApp.toObject());
+  } catch (e) {
+    log.error(e);
+    this.body = new Msg({nwk, ep}, e);
+  }
+});
+
+router.put(`${apiPrefix}/device/nwk/:nwk/ep/:ep`, function * (next) {
+  const nwk = parseInt(this.params.nwk, 10);
+  const ep = parseInt(this.params.ep, 10);
+  const { App } = this.mount.models;
+  const { name, payload } = yield body.json(this);
+  const updateReq = {};
+  name &amp;&amp; (updateReq.name = name);
+  payload &amp;&amp; (updateReq.payload = payload);
+  try {
+    const app = yield clientApi.setAppProperty(nwk, ep, updateReq);
+    this.body = new Msg(_.pick(app, [
+      'device', 'endPoint', 'type', 'name', 'payload',
+    ]));
+  } catch (e) {
+    log.error(e);
+    this.body = new Msg({nwk, ep}, e);
+  }
+});
+
+router.get(`${apiPrefix}/app/type/:type`, function * (next) {
+  const type = this.params.type;
+  const { App } = this.mount.models;
+  try {
+    let apps = yield App
+      .find({
+        type,
+      })
+      .select('device endPoint type name')
+      .exec();
+    if (apps.length &lt;= 0) {
+      throw new Error(`${type}类型应用未找到`);
+    }
+    this.body = new Msg(apps);
+  } catch (e) {
+    log.error(e);
+    this.body = new Msg({type}, e);
+  }
+});
+
+
+module.exports = router.routes();
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-libs_client.html">libs/client</a></li><li><a href="module-libs_serial.html">libs/serial</a></li><li><a href="module-libs_transfer.html">libs/transfer</a></li><li><a href="module-libs_zigbee.html">libs/zigbee</a></li><li><a href="module-routers_client.html">routers/client</a></li><li><a href="module-utils_log.html">utils/log</a></li><li><a href="module-utils_mixin.html">utils/mixin</a></li><li><a href="module-utils_msg.html">utils/msg</a></li><li><a href="module-utils_mt.html">utils/mt</a></li><li><a href="module-utils_mtAppMsg.html">utils/mtAppMsg</a></li></ul><h3>Classes</h3><ul><li><a href="module-libs_transfer-Transfer.html">Transfer</a></li><li><a href="module-utils_msg-Msg.html">Msg</a></li><li><a href="module-utils_mt-AppMsg.AppMsg.html">AppMsg</a></li><li><a href="module-utils_mt-ZdoSecDeviceRemove.ZdoSecDeviceRemove.html">ZdoSecDeviceRemove</a></li></ul><h3>Events</h3><ul><li><a href="module-libs_transfer.html#~event:areq">areq</a></li><li><a href="module-libs_transfer.html#~event:frame">frame</a></li><li><a href="module-libs_transfer.html#~event:sreq">sreq</a></li><li><a href="module-libs_transfer.html#~event:srsp">srsp</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Aug 30 2016 13:16:29 GMT+0800 (中国标准时间)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

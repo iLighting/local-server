@@ -1,5 +1,19 @@
 /**
- * 构建app msg指令。用于此项目zigbee设备之间传输自定义指令。
+ * 构建app msg指令。用于上位机、协调器、终端设备之间传输自定义指令。
+ *
+ * ## MSG结构
+ *
+ * 在`DATA`区段：
+ *
+ * 1. 自定义clusterId: 2 bytes
+ * 1. 自定义payload: n bytes
+ *
+ * ## ON_OF_LAMP
+ *
+ * clusterId (2B) | on off flag (1B)
+ * ---------------|----------------
+ * 0xff00         | 0 or 1
+ *
  * @module
  */
 
@@ -11,13 +25,13 @@ const msgEp = 8;
 const clusters = {
   // lamp
   // --------------------
-  ON_OF_LAMP: 10000,
-  GRAY_LAMP: 10001,
+  ON_OF_LAMP: 0xff00,
+  GRAY_LAMP: 0xff01,
 
   // switch
   // --------------------
-  ON_OF_SWITCH: 10002,
-  GRAY_SWITCH: 10003,
+  ON_OF_SWITCH: 0xff02,
+  GRAY_SWITCH: 0xff03,
 };
 
 /**
