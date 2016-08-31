@@ -26,6 +26,7 @@ const { app: log } = require('../utils/log');
 const _ = require('lodash');
 const Msg = require('../utils/msg');
 const clientApi = require('../libs/client');
+const msgTransfer = require('../libs/msgTransfer');
 
 // api 接口
 // -------------------------
@@ -109,13 +110,12 @@ router.get(`${apiPrefix}/device/nwk/:nwk/ep/:ep`, function * (next) {
 router.put(`${apiPrefix}/device/nwk/:nwk/ep/:ep`, function * (next) {
   const nwk = parseInt(this.params.nwk, 10);
   const ep = parseInt(this.params.ep, 10);
-  const { App } = this.mount.models;
   const { name, payload } = yield body.json(this);
   const updateReq = {};
   name && (updateReq.name = name);
   payload && (updateReq.payload = payload);
   try {
-    const app = yield clientApi.setAppProperty(nwk, ep, updateReq);
+    const app = yield msgTransfer.setAppProps(nwk, ep, updateReq);
     this.body = new Msg(_.pick(app, [
       'device', 'endPoint', 'type', 'name', 'payload',
     ]));

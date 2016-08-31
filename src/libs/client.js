@@ -1,4 +1,9 @@
 /**
+ * 指令帧处理层
+ *
+ * - 封装常用SREQ指令
+ * - 处理除`AppMsgFeedback`之外的AREQ指令。其交付`appmsg`层处理。
+ *
  * @module
  */
 
@@ -8,7 +13,7 @@ const pry = require('promisify-node');
 const { EventEmitter } = require('events');
 const { client: log } = require('../utils/log');
 const { getDb, getModels } = require('../db');
-const transfer = require('./transfer');
+const transfer = require('./frameTransfer');
 const mt = require('../utils/mt');
 const { onOfLamp } = require('../utils/mtAppMsg');
 
@@ -94,16 +99,16 @@ class Client extends EventEmitter {
     this._models = models;
     this._frameMap = frameMap;
     this._transfer = transfer;
-    this._transfer.on('areq', this.handleTransferAreq.bind(this));
+    this._transfer.on('areq', this._handleTransferAreq.bind(this));
   }
-  handleTransferAreq(buf) {
+  _handleTransferAreq(buf) {
     const areq = this._frameMap.genAreqInsByBuf(buf);
     /**
      * @event areq
      * @type {Frame}
      */
     this.emit('areq', areq);
-    this.handleAreqFeedback(areq);
+    this._handleAreqFeedback(areq);
   }
 
   * _handle_ZdoEndDeviceAnnceInd (areq) {
@@ -127,7 +132,7 @@ class Client extends EventEmitter {
    * 根据AREQ，修改数据库，并发出一些事件
    * @param {Frame} areq
    */
-  handleAreqFeedback(areq) {
+  _handleAreqFeedback(areq) {
     const handlerName = `_handle_${areq.name}`;
     if (!(handlerName in this)) {
       const err = `${handlerName} 处理器未定义`;

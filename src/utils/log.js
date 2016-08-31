@@ -18,4 +18,5 @@ module.exports = {
   app: log4js.getLogger('app'),
   serial: log4js.getLogger('serial'),
   client: log4js.getLogger('client'),
+  msgTransfer: log4js.getLogger('msgTransfer'),
 };

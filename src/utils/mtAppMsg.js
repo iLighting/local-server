@@ -35,6 +35,19 @@ const clusters = {
 };
 
 /**
+ * 为Class定义静态属性
+ * @param {Function} cls
+ * @param {object} desc
+ */
+function setClass(cls, desc) {
+  let nd = {};
+  Object.keys(desc).forEach(name => {
+    nd[name] = {value: desc[name], writable: false, enumerable: true, configurable: false};
+  });
+  Object.defineProperties(cls, nd);
+}
+
+/**
  * ON_OFF_LAMP 工具类
  */
 const onOfLamp = {
@@ -53,8 +66,77 @@ const onOfLamp = {
   }
 };
 
+/**
+ * @typedef {MsgBase} MsgBase
+ */
+class MsgBase {}
+
+/**
+ * @typedef {MsgSend} MsgSend
+ */
+class MsgSend extends MsgBase {}
+setClass(MsgSend, {
+  msgEp: msgEp
+});
+
+/**
+ * @typedef {MsgFeedback} MsgFeedback
+ */
+class MsgFeedback extends MsgBase {}
+
+
+// on off lamp
+// -----------------------------------------------------
+
+/**
+ * @typedef {OnOffLampSendBase} OnOffLampSendBase
+ */
+class OnOffLampSendBase extends MsgSend {}
+setClass(OnOffLampSendBase, {
+  clusterId: clusters.ON_OF_LAMP
+});
+
+/**
+ * @typedef {OnOffLampTurn} OnOffLampTurn
+ */
+class OnOffLampTurn extends OnOffLampSendBase {
+  /**
+   * @param {Number} nwk
+   * @param {Number} ep
+   * @param {Boolean} x
+   */
+  constructor(nwk, ep, x) {
+    super();
+    this._nwk = nwk;
+    this._ep = ep;
+    this._x = x;
+  }
+  dump() {
+    const msg = Buffer.from([
+      OnOffLampTurn.appCmdId, +this._x
+    ]);
+    return new AppMsg(
+      OnOffLampTurn.msgEp,
+      this._nwk,
+      this._ep,
+      OnOffLampTurn.clusterId,
+      msg
+    );
+  }
+}
+setClass(OnOffLampTurn, {
+  appCmdId: 1
+});
+
 
 module.exports = {
   clusters,
   onOfLamp,
+  // base
+  MsgBase,
+  MsgSend,
+  MsgFeedback,
+  // lamp
+  OnOffLampSendBase,
+  OnOffLampTurn,
 };

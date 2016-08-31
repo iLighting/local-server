@@ -89,14 +89,16 @@ appSchema.name = 'App';
 appSchema.pre('validate', function(next) {
   const self = this;
   const {endPoint, type, payload} = self;
-  if (type=='lamp' || type=='gray-lamp') {
+  if (type=='lamp') {
+    try {
+      expect(payload).to.have.property('on').that.is.a('boolean');
+    } catch(e) { next(e) }
+  } else if (type=='gray-lamp') {
     try {
       expect(payload).to.have.property('level');
       expect(payload.level).to.be.a('number');
       expect(payload.level).to.be.within(0,100);
-    } catch(e) {
-      next(e);
-    }
+    } catch(e) { next(e) }
   }
   next();
 });

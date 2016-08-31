@@ -1,9 +1,11 @@
 /**
+ * 指令帧收发层
  * @module
  */
 
+const { expect } = require('chai');
 const { Writable } = require('stream');
-const { SOF, genFCS, parseFrame, isAreq, shiftFrameFromBuf } = require('../utils/mt');
+const { SOF, genFCS, parseFrame, isAreq, shiftFrameFromBuf, FrameSreq } = require('../utils/mt');
 const { transfer: log } = require('../utils/log');
 
 
@@ -109,7 +111,7 @@ class Transfer extends Writable {
    * 此处改写`write`方法，以便能接受Frame类型的chunk。
    *
    * 不可信地发送指令帧。当写入串口时，认为发送成功。
-   * @param {Frame} chunk
+   * @param {FrameSreq} chunk
    * @param encoding
    * @param callback
    * @private
@@ -118,6 +120,7 @@ class Transfer extends Writable {
    * @memberOf Transfer
    */
   write(chunk, encoding, callback) {
+    expect(chunk).to.be.an.instanceOf(FrameSreq);
     log.trace('收到指令帧，准备写入串口\n', chunk);
     this._tempChunk = chunk;
     super.write(chunk.dump(), encoding, callback);

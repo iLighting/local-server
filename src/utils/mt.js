@@ -185,6 +185,9 @@ class FrameBase {
   get name() { return this.constructor.name; }
 }
 
+/**
+ * @typedef {FrameSreq} FrameSreq
+ */
 class FrameSreq extends FrameBase {
   /**
    * 获取指令帧buffer
@@ -218,6 +221,9 @@ Object.defineProperties(FrameSreq, {
   type: { value: 'SREQ', writable: false, configurable: false, enumerable: true }
 });
 
+/**
+ * @typedef {FrameAreq} FrameAreq
+ */
 class FrameAreq extends FrameBase {
   constructor(origin) {
     super();
@@ -262,6 +268,9 @@ Object.defineProperties(FrameAreq, {
   type: { value: 'AREQ', writable: false, configurable: false, enumerable: true }
 });
 
+/**
+ * @typedef {SysPing} SysPing
+ */
 class SysPing extends FrameSreq {
   dump() { return super.dump(); }
 }
@@ -274,6 +283,9 @@ registerFrame(SysPing);
 // ZDO
 // -------------------------------------------------------------
 
+/**
+ * @typedef {ZdoSecDeviceRemove} ZdoSecDeviceRemove
+ */
 class ZdoSecDeviceRemove extends FrameSreq {
   /**
    * @param {Number} ieee
@@ -285,6 +297,9 @@ class ZdoSecDeviceRemove extends FrameSreq {
   dump() { return super.dump(Buffer.from([this.ieee])); }
 }
 
+/**
+ * @typedef {ZdoEndDeviceAnnceInd} ZdoEndDeviceAnnceInd
+ */
 class ZdoEndDeviceAnnceInd extends FrameAreq {
   constructor(origin) {
     super(origin);
@@ -315,6 +330,9 @@ registerFrame(ZdoEndDeviceAnnceInd);
 // APP
 // -------------------------------------------------------------
 
+/**
+ * @typedef {MsgTransfer} MsgTransfer
+ */
 class AppMsg extends FrameSreq {
   /**
    * @param {Number} ep
@@ -350,6 +368,9 @@ Object.defineProperties(AppMsg, {
 });
 registerFrame(AppMsg);
 
+/**
+ * @typedef {AppMsgFeedback} AppMsgFeedback
+ */
 class AppMsgFeedback extends FrameAreq {
   constructor(buf) {
     super(buf);
@@ -413,6 +434,10 @@ module.exports = {
   isAreq,
   shiftFrameFromBuf,
   buf2Ieee,
+  // frame base
+  FrameBase,
+  FrameSreq,
+  FrameAreq,
   // sys
   SysPing,
   // zdo

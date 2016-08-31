@@ -11,11 +11,11 @@ function genIeee () {
 const genApps = function () {
   return [8,9].map(ep => mock({
     'endPoint': ep,
-    'type|1': ['lamp', 'light-sensor'],
+    'type|1': ['lamp'],
     'name': '@email',
     'payload': function () {
       if (this.type == 'lamp') {
-        return mock({ 'level|1-100': 2 })
+        return {on: false}
       } else if (this.type == 'light-sensor') {
         return {}
       } else {
