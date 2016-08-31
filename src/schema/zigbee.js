@@ -38,6 +38,13 @@ const deviceSchema = new Schema({
   minimize: false,
 });
 deviceSchema.name = 'Device';
+deviceSchema.pre('validate', function (next) {
+  const { ieee } = this;
+  try {
+    expect(ieee).to.match(/^([A-Z0-9]{1,2}-){7}[A-Z0-9]{1,2}$/);
+  } catch (e) { next(e) }
+  next();
+});
 deviceSchema.query.byNwk = function(nwk) {
   return this.findOne({nwk});
 };

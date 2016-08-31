@@ -22,9 +22,7 @@ class Transfer extends Writable {
     this._cache = new Buffer(0);
     this._serial = require('./serial');
     this._serial.on('data', this._handleSerialData.bind(this));
-    this.on('frame', this._dispatchFrame.bind(this));
   }
-
   /**
    * 分发frame到srsp和areq
    * @param {Buffer} buf
@@ -46,7 +44,7 @@ class Transfer extends Writable {
        * @property {Buffer} data
        * @property {Number} fcs - FCS
        */
-      this.emit('areq', buf, frameObj)
+      this.emit('areq', buf, frameObj);
     } else {
       log.trace('dispatch SRSP', buf, '\n', frameObj);
       /**
@@ -81,6 +79,7 @@ class Transfer extends Writable {
          * @type {Object}
          */
         this.emit('frame', Buffer.from(frameBuf), frameObj);
+        this._dispatchFrame(frameBuf, frameObj);
       }
     }
     // 剩余长度不足

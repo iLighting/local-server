@@ -1,4 +1,5 @@
 const { expect } = require('chai');
+const mt = require('../src/utils/mt');
 const { shiftFrameFromBuf } = require('../src/utils/mt');
 
 describe('MT工具类库测试', () => {
@@ -33,6 +34,18 @@ describe('MT工具类库测试', () => {
       expect(rest.compare(tail)).to.be.equal(0);
       expect(frame.length).to.be.equal(0);
     });
-  })
+  });
+
+  describe('ZdoEndDeviceAnnceInd', () => {
+    it('解析', () => {
+      const buf = mt.genFrame(
+        0x45, 0xc1,
+        Buffer.from([0xaa, 0xbb, 0xcc, 0xdd, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0xaa, 0xbb, 0xff])
+      );
+      const ins = new mt.ZdoEndDeviceAnnceInd(buf);
+      console.log(ins.parsed);
+      expect(ins.parsed.NwkAddr).to.be.equal(0xccdd);
+    })
+  });
 
 });

@@ -52,6 +52,126 @@
     
 
     
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="~origin"><span class="type-signature">(inner) </span>origin<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils_mt.js.html">utils/mt.js</a>, <a href="utils_mt.js.html#line224">line 224</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="~parsed"><span class="type-signature">(inner) </span>parsed<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils_mt.js.html">utils/mt.js</a>, <a href="utils_mt.js.html#line297">line 297</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
 
     
         <h3 class="subsection-title">Methods</h3>
@@ -61,14 +181,14 @@
 
     
 
-    <h4 class="name" id="~genFrameByName"><span class="type-signature">(inner) </span>genFrameByName<span class="signature">(name, &hellip;args)</span><span class="type-signature"> &rarr; {Buffer}</span></h4>
+    <h4 class="name" id="~buf2Ieee"><span class="type-signature">(inner) </span>buf2Ieee<span class="signature">(buf)</span><span class="type-signature"> &rarr; {string}</span></h4>
 
     
 
 
 
 <div class="description">
-    <p>指定名字，构建MT指令帧</p>
+    <p>转换buf为ieee标准字符串</p>
 </div>
 
 
@@ -92,8 +212,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -106,59 +224,18 @@
 
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>buf</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">Buffer</span>
 
 
             
             </td>
 
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>args</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                    &lt;repeatable><br>
-                
-                </td>
             
 
             
@@ -204,7 +281,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_mt.js.html">utils/mt.js</a>, <a href="utils_mt.js.html#line127">line 127</a>
+        <a href="utils_mt.js.html">utils/mt.js</a>, <a href="utils_mt.js.html#line396">line 396</a>
     </li></ul></dd>
     
 
@@ -238,7 +315,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Buffer</span>
+<span class="param-type">string</span>
 
 
     </dd>
@@ -352,7 +429,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_mt.js.html">utils/mt.js</a>, <a href="utils_mt.js.html#line311">line 311</a>
+        <a href="utils_mt.js.html">utils/mt.js</a>, <a href="utils_mt.js.html#line380">line 380</a>
     </li></ul></dd>
     
 
@@ -497,7 +574,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_mt.js.html">utils/mt.js</a>, <a href="utils_mt.js.html#line303">line 303</a>
+        <a href="utils_mt.js.html">utils/mt.js</a>, <a href="utils_mt.js.html#line372">line 372</a>
     </li></ul></dd>
     
 
@@ -646,7 +723,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_mt.js.html">utils/mt.js</a>, <a href="utils_mt.js.html#line137">line 137</a>
+        <a href="utils_mt.js.html">utils/mt.js</a>, <a href="utils_mt.js.html#line94">line 94</a>
     </li></ul></dd>
     
 
@@ -690,6 +767,137 @@
 </dl>
 
     
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~registerFrame"><span class="type-signature">(inner) </span>registerFrame<span class="signature">(cls)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>注册AREQ类</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>cls</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Frame</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils_mt.js.html">utils/mt.js</a>, <a href="utils_mt.js.html#line169">line 169</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -798,7 +1006,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_mt.js.html">utils/mt.js</a>, <a href="utils_mt.js.html#line193">line 193</a>
+        <a href="utils_mt.js.html">utils/mt.js</a>, <a href="utils_mt.js.html#line150">line 150</a>
     </li></ul></dd>
     
 
@@ -900,7 +1108,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils_mt.js.html">utils/mt.js</a>, <a href="utils_mt.js.html#line208">line 208</a>
+        <a href="utils_mt.js.html">utils/mt.js</a>, <a href="utils_mt.js.html#line179">line 179</a>
     </li></ul></dd>
     
 
@@ -930,13 +1138,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-libs_client.html">libs/client</a></li><li><a href="module-libs_serial.html">libs/serial</a></li><li><a href="module-libs_transfer.html">libs/transfer</a></li><li><a href="module-libs_zigbee.html">libs/zigbee</a></li><li><a href="module-routers_client.html">routers/client</a></li><li><a href="module-utils_log.html">utils/log</a></li><li><a href="module-utils_mixin.html">utils/mixin</a></li><li><a href="module-utils_msg.html">utils/msg</a></li><li><a href="module-utils_mt.html">utils/mt</a></li><li><a href="module-utils_mtAppMsg.html">utils/mtAppMsg</a></li></ul><h3>Classes</h3><ul><li><a href="module-libs_transfer-Transfer.html">Transfer</a></li><li><a href="module-utils_msg-Msg.html">Msg</a></li><li><a href="module-utils_mt-AppMsg.AppMsg.html">AppMsg</a></li><li><a href="module-utils_mt-ZdoSecDeviceRemove.ZdoSecDeviceRemove.html">ZdoSecDeviceRemove</a></li></ul><h3>Events</h3><ul><li><a href="module-libs_transfer.html#~event:areq">areq</a></li><li><a href="module-libs_transfer.html#~event:frame">frame</a></li><li><a href="module-libs_transfer.html#~event:sreq">sreq</a></li><li><a href="module-libs_transfer.html#~event:srsp">srsp</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-libs_client.html">libs/client</a></li><li><a href="module-libs_serial.html">libs/serial</a></li><li><a href="module-libs_transfer.html">libs/transfer</a></li><li><a href="module-libs_zigbee.html">libs/zigbee</a></li><li><a href="module-routers_client.html">routers/client</a></li><li><a href="module-utils_log.html">utils/log</a></li><li><a href="module-utils_mixin.html">utils/mixin</a></li><li><a href="module-utils_msg.html">utils/msg</a></li><li><a href="module-utils_mt.html">utils/mt</a></li><li><a href="module-utils_mtAppMsg.html">utils/mtAppMsg</a></li></ul><h3>Classes</h3><ul><li><a href="module-libs_client-Client.html">Client</a></li><li><a href="module-libs_transfer-Transfer.html">Transfer</a></li><li><a href="module-utils_msg-Msg.html">Msg</a></li><li><a href="module-utils_mt-AppMsg.AppMsg.html">AppMsg</a></li><li><a href="module-utils_mt-ZdoSecDeviceRemove.ZdoSecDeviceRemove.html">ZdoSecDeviceRemove</a></li></ul><h3>Events</h3><ul><li><a href="module-libs_transfer.html#~event:areq">areq</a></li><li><a href="module-libs_transfer.html#~event:frame">frame</a></li><li><a href="module-libs_client.html#~event:postAreq">postAreq</a></li><li><a href="module-libs_transfer.html#~event:sreq">sreq</a></li><li><a href="module-libs_transfer.html#~event:srsp">srsp</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Aug 30 2016 16:47:29 GMT+0800 (中国标准时间)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Aug 31 2016 14:13:12 GMT+0800 (中国标准时间)
 </footer>
 
 <script> prettyPrint(); </script>

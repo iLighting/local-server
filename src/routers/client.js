@@ -3,6 +3,9 @@
  *
  * @description
  *
+ * ### `/api/device`
+ * - `GET`
+ *
  * ### `/api/device/nwk/:nwk`
  * - `GET`
  *
@@ -28,6 +31,32 @@ const clientApi = require('../libs/client');
 // -------------------------
 
 const apiPrefix = '/api';
+
+router.get(`${apiPrefix}/device`, function * (next) {
+  const { Device, App } = this.mount.models;
+  const dbQuery = _.pick(this.request.query, [
+    'nwk', 'ieee', 'type', 'name'
+  ]);
+  try {
+    const devs = yield Device
+      .find(dbQuery)
+      .select('nwk ieee type name')
+      .exec();
+    let result = devs.map(dev => dev.toObject());
+    for(let i=0; i<result.length; i++) {
+      let apps = yield App
+        .find()
+        .where('device').equals(result[i].nwk)
+        .select('device endPoint type name')
+        .exec();
+      result[i].apps = apps.map(app => app.toObject());
+    }
+    this.body = new Msg(result);
+  } catch (e) {
+    log.error(e);
+    this.body = new Msg(dbQuery, e);
+  }
+});
 
 router.get(`${apiPrefix}/device/nwk/:nwk`, function * (next) {
   const nwk = parseInt(this.params.nwk, 10);

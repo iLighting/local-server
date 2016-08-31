@@ -3,8 +3,23 @@
  */
 
 const { expect } = require('chai');
+const _ = require('lodash');
 
 const SOF = 0xfe;
+const frameMap = new (class extends Map {
+  getByCmd(cmd0, cmd1) {
+    return this.get([cmd0, cmd1].toString());
+  }
+  genAreqInsByBuf(buf) {
+    const parsed = _parseFrame(buf);
+    if (!parsed) { throw new Error('原始指令帧解析失败')}
+    const { cmd0, cmd1 } = parsed;
+    const Frame = this.getByCmd(cmd0, cmd1);
+    if (Frame.type != 'AREQ') { throw new Error(`${cmd0}-${cmd1}对应非AREQ类型`)}
+    return new Frame(buf);
+  }
+});
+
 
 /**
  * 计算fcs
@@ -70,64 +85,6 @@ const _parseFrame = function (frame) {
 };
 
 const actions = new Map();
-
-// SYS
-// -------------------------------------------
-actions.set('SYS_PING',
-  /**
-   * gen SYS_PING frame
-   * @return {Buffer}
-   */
-  function () { return _genFrame(0x21, 0x01); }
-);
-
-// ZDO
-// -------------------------------------------
-actions.set('ZDO_SEC_DEVICE_REMOVE',
-  /**
-   * gen ZDO_SEC_DEVICE_REMOVE frame
-   * @param {String} ieee
-   * @return {Buffer}
-   */
-  function (ieee) {
-    expect(ieee).to.be.a('string');
-    return _genFrame(0x25, 0x44, new Buffer(ieee))
-});
-
-// APP
-// -------------------------------------------
-actions.set('APP_MSG',
-  /**
-   * @param {Number} ep
-   * @param {Number} destNwk
-   * @param {Number} destEp
-   * @param {Number} clusterId
-   * @param {Buffer} msg
-   * @return {Buffer}
-   */
-  function (ep, destNwk, destEp, clusterId, msg) {
-    const msgLen = msg.length;
-    const data = new Buffer(7 + msgLen);
-    data.writeUInt8(ep, 0);
-    data.writeUInt16BE(destNwk, 1);
-    data.writeUInt8(destEp, 3);
-    data.writeUInt16BE(clusterId, 4);
-    data.writeUInt8(msgLen, 6);
-    msg.copy(data, 7);
-    return _genFrame(0x29, 0x00, data);
-  }
-);
-
-/**
- * 指定名字，构建MT指令帧
- * @param {String} name
- * @param {*} args
- * @return {Buffer}
- */
-function genFrameByName(name, ...args) {
-  expect(name).to.be.a('string');
-  return actions.get(name)(...args);
-}
 
 /**
  * 解析MT srsp指令
@@ -206,9 +163,29 @@ function shiftFrameFromBuf(buf) {
 }
 
 /**
+ * 注册AREQ类
+ * @param {Frame} cls
+ */
+function registerFrame(cls) {
+  const { cmd0, cmd1 } = cls;
+  if (_.isUndefined(cmd0) || _.isUndefined(cmd1)) {
+    throw new Error(`${cls.name}命令字未定义`)
+  }
+  const key = [cmd0, cmd1].toString();
+  frameMap.set(key, cls);
+  return cls;
+}
+
+/**
  * @typedef {FrameBase} Frame
  */
 class FrameBase {
+  get cmd0() { return this.constructor.cmd0; }
+  get cmd1() { return this.constructor.cmd1; }
+  get name() { return this.constructor.name; }
+}
+
+class FrameSreq extends FrameBase {
   /**
    * 获取指令帧buffer
    * @param {Buffer} [data]
@@ -234,24 +211,70 @@ class FrameBase {
     }
   }
   static parseSRSP(frame) { throw new Error('未实现') }
-  get cmd0() { return this.constructor.cmd0; }
-  get cmd1() { return this.constructor.cmd1; }
   get srspCmd0() { return this.constructor.srspCmd0; }
   get srspCmd1() { return this.constructor.srspCmd1; }
-  get name() { return this.constructor.name; }
 }
+Object.defineProperties(FrameSreq, {
+  type: { value: 'SREQ', writable: false, configurable: false, enumerable: true }
+});
 
+class FrameAreq extends FrameBase {
+  constructor(origin) {
+    super();
+    /**
+     * @member origin
+     */
+    this.origin = origin;
+  }
+  /**
+   * 预处理原始指令帧
+   * @param {Buffer} buf
+   * @return {Object}
+   * @throws {Error} - 解析失败
+   * @throws {Error} - 命令字不匹配
+   * @see _parseFrame
+   */
+  preParse(buf) {
+    const parsed = _parseFrame(buf);
+    if (!parsed) {
+      throw new Error(`${this.name}解析失败`);
+    }
+    const { cmd0, cmd1 } = this;
+    if (parsed.cmd0 != cmd0 || parsed.cmd1 != cmd1) {
+      throw new Error(`${this.name}命令字不匹配`);
+    }
+    return parsed;
+  }
+  /**
+   * @param {Object} desc
+   */
+  genParsedValue(desc) {
+    let re = {};
+    let nd = {};
+    Object.keys(desc).forEach(name => {
+      nd[name] = {value: desc[name], writable: false, enumerable: true, configurable: false};
+    });
+    Object.defineProperties(re, nd);
+    return re;
+  }
+}
+Object.defineProperties(FrameAreq, {
+  type: { value: 'AREQ', writable: false, configurable: false, enumerable: true }
+});
 
-class SysPing extends FrameBase {
+class SysPing extends FrameSreq {
   dump() { return super.dump(); }
 }
 SysPing.cmd0 = 0x21;
 SysPing.cmd1 = 0x01;
 SysPing.srspCmd0 = 0x61;
 SysPing.srspCmd1 = 0x01;
+registerFrame(SysPing);
 
+// ZDO
+// -------------------------------------------------------------
 
-class ZdoSecDeviceRemove extends FrameBase {
+class ZdoSecDeviceRemove extends FrameSreq {
   /**
    * @param {Number} ieee
    */
@@ -262,7 +285,37 @@ class ZdoSecDeviceRemove extends FrameBase {
   dump() { return super.dump(Buffer.from([this.ieee])); }
 }
 
-class AppMsg extends FrameBase {
+class ZdoEndDeviceAnnceInd extends FrameAreq {
+  constructor(origin) {
+    super(origin);
+    const { data } = this.preParse(origin);
+    const srcAddr = data.readUInt16BE(0);
+    const nwkAddr = data.readUInt16BE(2);
+    const ieeeAddr = buf2Ieee(data.slice(4, 4+8));
+    const capabilities = data.readUInt8(12);
+    const type = !!(capabilities & 0x02) ? 'router' : 'endDevice';
+    /**
+     * @member parsed
+     */
+    this.parsed = this.genParsedValue({
+      'SrcAddr': srcAddr,
+      'NwkAddr': nwkAddr,
+      'IEEEAddr': ieeeAddr,
+      'Capabilities': capabilities,
+      'DeviceType': type,
+    });
+  }
+}
+Object.defineProperties(ZdoEndDeviceAnnceInd, {
+  cmd0: { value: 0x45, writable: false, configurable: false, enumerable: true },
+  cmd1: { value: 0xc1, writable: false, configurable: false, enumerable: true },
+});
+registerFrame(ZdoEndDeviceAnnceInd);
+
+// APP
+// -------------------------------------------------------------
+
+class AppMsg extends FrameSreq {
   /**
    * @param {Number} ep
    * @param {Number} destNwk
@@ -289,12 +342,28 @@ class AppMsg extends FrameBase {
     return _genFrame(0x29, 0x00, data);
   }
 }
-Object.assign(AppMsg, {
-  cmd0: 0x29,
-  cmd1: 0x00,
-  srspCmd0: 0x69,
-  srspCmd1: 0x00
+Object.defineProperties(AppMsg, {
+  cmd0: { value: 0x29, writable: false, configurable: false, enumerable: true },
+  cmd1: { value: 0x00, writable: false, configurable: false, enumerable: true },
+  srspCmd0: { value: 0x69, writable: false, configurable: false, enumerable: true },
+  srspCmd1: { value: 0x00, writable: false, configurable: false, enumerable: true },
 });
+registerFrame(AppMsg);
+
+class AppMsgFeedback extends FrameAreq {
+  constructor(buf) {
+    super(buf);
+    const { data } = this.preParse(buf);
+    this.parsed = this.genParsedValue({
+      'Data': data
+    });
+  }
+}
+Object.defineProperties(AppMsgFeedback, {
+  cmd0: { value: 0x49, writable: false, configurable: false, enumerable: true },
+  cmd1: { value: 0x00, writable: false, configurable: false, enumerable: true },
+});
+registerFrame(AppMsgFeedback);
 
 /**
  * @param {*} x
@@ -311,16 +380,31 @@ function isFrameIns (x) {
 function isAreq(frame) {
   if (frame instanceof Buffer) {
     const { cmd0 } = _parseFrame(frame);
-    return !!(cmd0 & 0xf0 == 0x40);
+    return ((cmd0 & 0xf0) == 0x40);
   } else if (isFrameIns(frame)) {
-    return !!(frame.cmd0 & 0xf0 == 0x40);
+    return ((frame.cmd0 & 0xf0) == 0x40);
   } else {
     return false;
   }
 }
 
+/**
+ * 转换buf为ieee标准字符串
+ * @param {Buffer} buf
+ * @return {string}
+ */
+function buf2Ieee(buf) {
+  expect(buf).to.be.an.instanceOf(Buffer);
+  const re = [];
+  for (let v of buf) {
+    re.push(Number(v).toString(16).toUpperCase());
+  }
+  return re.join('-');
+}
+
 module.exports = {
   SOF,
+  frameMap,
   genFCS: _genFcs,
   genFrame: _genFrame,
   parseFrame: _parseFrame,
@@ -328,7 +412,13 @@ module.exports = {
   isFrameIns,
   isAreq,
   shiftFrameFromBuf,
+  buf2Ieee,
+  // sys
   SysPing,
+  // zdo
   ZdoSecDeviceRemove,
+  ZdoEndDeviceAnnceInd,
+  // app
   AppMsg,
+  AppMsgFeedback,
 };
