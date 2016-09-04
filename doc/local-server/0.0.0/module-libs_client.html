@@ -29,6 +29,8 @@
 <header>
     
         
+            
+        
     
 </header>
 
@@ -36,149 +38,24 @@
     <div class="container-overview">
     
         
-
-        
-    
-    </div>
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="module-libs_client-Client.html">Client</a></dt>
-            <dd></dd>
-        </dl>
-    
-
-     
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    <h4 class="name" id="~setAppProperty"><span class="type-signature">(inner) </span>setAppProperty<span class="signature">(nwk, ep, props)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
-
-    
-
-
-
-<div class="description">
-    <p>不可信地设置app属性</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
+            <div class="description"><p>指令帧处理层</p>
+<ul>
+<li>封装常用SREQ指令</li>
+<li>处理除<code>AppMsgFeedback</code>之外的AREQ指令。其交付<code>appmsg</code>层处理。</li>
+</ul></div>
         
 
         
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>nwk</code></td>
             
 
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
 
 
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>ep</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
 
 
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>props</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
 
 
-            
-            </td>
 
-            
 
-            
-
-            <td class="description last"><p>属性对象</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -214,7 +91,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_client.js.html">libs/client.js</a>, <a href="libs_client.js.html#line63">line 63</a>
+        <a href="libs_client.js.html">libs/client.js</a>, <a href="libs_client.js.html#line1">line 1</a>
     </li></ul></dd>
     
 
@@ -237,34 +114,32 @@
 
 
 
-<h5>Returns:</h5>
+
+
 
         
-<div class="param-desc">
-    <ul>
-<li>resolve 更新后的app字面量对象</li>
-</ul>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise</span>
-
-
-    </dd>
-</dl>
+    
+    </div>
 
     
 
+    
 
+    
+        <h3 class="subsection-title">Classes</h3>
 
-        
+        <dl>
+            <dt><a href="module-libs_client-Client.html">Client</a></dt>
+            <dd></dd>
+        </dl>
+    
+
+     
+
+    
+
+    
+
     
 
     
@@ -334,7 +209,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_client.js.html">libs/client.js</a>, <a href="libs_client.js.html#line101">line 101</a>
+        <a href="libs_client.js.html">libs/client.js</a>, <a href="libs_client.js.html#line41">line 41</a>
     </li></ul></dd>
     
 
@@ -422,7 +297,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_client.js.html">libs/client.js</a>, <a href="libs_client.js.html#line139">line 139</a>
+        <a href="libs_client.js.html">libs/client.js</a>, <a href="libs_client.js.html#line79">line 79</a>
     </li></ul></dd>
     
 
@@ -460,13 +335,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-libs_client.html">libs/client</a></li><li><a href="module-libs_serial.html">libs/serial</a></li><li><a href="module-libs_transfer.html">libs/transfer</a></li><li><a href="module-libs_zigbee.html">libs/zigbee</a></li><li><a href="module-routers_client.html">routers/client</a></li><li><a href="module-utils_log.html">utils/log</a></li><li><a href="module-utils_mixin.html">utils/mixin</a></li><li><a href="module-utils_msg.html">utils/msg</a></li><li><a href="module-utils_mt.html">utils/mt</a></li><li><a href="module-utils_mtAppMsg.html">utils/mtAppMsg</a></li></ul><h3>Classes</h3><ul><li><a href="module-libs_client-Client.html">Client</a></li><li><a href="module-libs_transfer-Transfer.html">Transfer</a></li><li><a href="module-utils_msg-Msg.html">Msg</a></li><li><a href="module-utils_mt-AppMsg.AppMsg.html">AppMsg</a></li><li><a href="module-utils_mt-ZdoSecDeviceRemove.ZdoSecDeviceRemove.html">ZdoSecDeviceRemove</a></li></ul><h3>Events</h3><ul><li><a href="module-libs_transfer.html#~event:areq">areq</a></li><li><a href="module-libs_transfer.html#~event:frame">frame</a></li><li><a href="module-libs_client.html#~event:postAreq">postAreq</a></li><li><a href="module-libs_transfer.html#~event:sreq">sreq</a></li><li><a href="module-libs_transfer.html#~event:srsp">srsp</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-libs_client.html">libs/client</a></li><li><a href="module-libs_frameTransfer.html">libs/frameTransfer</a></li><li><a href="module-libs_msgTransfer.html">libs/msgTransfer</a></li><li><a href="module-libs_serial.html">libs/serial</a></li><li><a href="module-libs_zigbee.html">libs/zigbee</a></li><li><a href="module-routers_client.html">routers/client</a></li><li><a href="module-socket_client.html">socket/client</a></li><li><a href="module-utils_log.html">utils/log</a></li><li><a href="module-utils_mixin.html">utils/mixin</a></li><li><a href="module-utils_msg.html">utils/msg</a></li><li><a href="module-utils_mt.html">utils/mt</a></li><li><a href="module-utils_mtAppMsg.html">utils/mtAppMsg</a></li></ul><h3>Classes</h3><ul><li><a href="module-libs_client-Client.html">Client</a></li><li><a href="module-libs_frameTransfer-Transfer.html">Transfer</a></li><li><a href="module-libs_msgTransfer-MsgTransfer.html">MsgTransfer</a></li><li><a href="module-utils_msg-Msg.html">Msg</a></li><li><a href="module-utils_mtAppMsg-OnOffLampTurn.OnOffLampTurn.html">OnOffLampTurn</a></li><li><a href="module-utils_mt-AppMsg.AppMsg.html">AppMsg</a></li><li><a href="module-utils_mt-ZdoSecDeviceRemove.ZdoSecDeviceRemove.html">ZdoSecDeviceRemove</a></li></ul><h3>Events</h3><ul><li><a href="module-libs_frameTransfer.html#~event:areq">areq</a></li><li><a href="module-libs_msgTransfer.html#~event:feedback">feedback</a></li><li><a href="module-libs_frameTransfer.html#~event:frame">frame</a></li><li><a href="module-libs_client.html#~event:postAreq">postAreq</a></li><li><a href="module-libs_frameTransfer.html#~event:sreq">sreq</a></li><li><a href="module-libs_frameTransfer.html#~event:srsp">srsp</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Wed Aug 31 2016 14:13:12 GMT+0800 (中国标准时间)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Sun Sep 04 2016 17:05:46 GMT+0800 (中国标准时间)
 </footer>
 
 <script> prettyPrint(); </script>

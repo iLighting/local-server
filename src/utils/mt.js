@@ -234,6 +234,7 @@ class FrameAreq extends FrameBase {
   }
   /**
    * 预处理原始指令帧
+   * @private
    * @param {Buffer} buf
    * @return {Object}
    * @throws {Error} - 解析失败
@@ -252,6 +253,7 @@ class FrameAreq extends FrameBase {
     return parsed;
   }
   /**
+   * @private
    * @param {Object} desc
    */
   genParsedValue(desc) {

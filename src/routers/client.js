@@ -25,7 +25,7 @@ const body = require('co-body');
 const { app: log } = require('../utils/log');
 const _ = require('lodash');
 const Msg = require('../utils/msg');
-const clientApi = require('../libs/client');
+const clientLib = require('../libs/client');
 const msgTransfer = require('../libs/msgTransfer');
 
 // api 接口
@@ -48,7 +48,7 @@ router.get(`${apiPrefix}/device`, function * (next) {
       let apps = yield App
         .find()
         .where('device').equals(result[i].nwk)
-        .select('device endPoint type name')
+        .select('device endPoint type name payload')
         .exec();
       result[i].apps = apps.map(app => app.toObject());
     }
@@ -74,7 +74,7 @@ router.get(`${apiPrefix}/device/nwk/:nwk`, function * (next) {
       let apps = yield App
         .find()
         .where('device').equals(dev.nwk)
-        .select('device endPoint type name')
+        .select('device endPoint type name payload')
         .exec();
       devObj.apps = apps.map(app => app.toObject());
     } else {
@@ -133,7 +133,7 @@ router.get(`${apiPrefix}/app/type/:type`, function * (next) {
       .find({
         type,
       })
-      .select('device endPoint type name')
+      .select('device endPoint type name payload')
       .exec();
     if (apps.length <= 0) {
       throw new Error(`${type}类型应用未找到`);

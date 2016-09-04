@@ -18,12 +18,17 @@ const launch = co.wrap(function * (config) {
   // mock数据库
   yield mockDb(db, models);
   sysLog.debug('mock数据库');
-  // 初始化APP
+  // 初始化Server
   const app = require('./app');
   app.context.mount = {};
   app.context.mount.db = db;
   app.context.mount.models = models;
-  app.listen(config.server.port);
+  const server = require('http').createServer(app.callback());
+  // 初始化 socket.io
+  const io = require('socket.io')(server);
+  require('./socket')(io);
+  // 启动
+  server.listen(config.server.port);
   sysLog.mark('应用启动成功，端口号 %s', config.server.port);
   return { db, models, app };
 });

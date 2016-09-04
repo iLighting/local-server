@@ -11,8 +11,8 @@ const { expect } = require('chai');
 const co = require('co');
 const { EventEmitter } = require('events');
 const { getDb, getModels } = require('../db');
-const { client } = require('./client');
-const { transfer } = require('./frameTransfer');
+const client = require('./client');
+const transfer = require('./frameTransfer');
 const { msgTransfer: log } = require('../utils/log');
 const { parseSrsp, isAreq, AppMsgFeedback } = require('../utils/mt');
 const {
@@ -66,7 +66,7 @@ class MsgTransfer extends EventEmitter {
    * @private
    */
   * ['_setAppProps_lamp'] (nwk, ep, props) {
-    log.info(`开始同步远端Lamp ${nwk}/${ep}\n`, props);
+    log.info(`开始同步远端Lamp ${nwk}.${ep}\n`, props);
     const {payload} = props;
     if (payload) {
       const {on: lampOn } = payload;
