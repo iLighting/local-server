@@ -14,23 +14,54 @@ const { getDb, getModels } = require('../db');
 const client = require('./client');
 const transfer = require('./frameTransfer');
 const { msgTransfer: log } = require('../utils/log');
-const { parseSrsp, isAreq, AppMsgFeedback } = require('../utils/mt');
+const { parseSrsp, isAreq, AppMsg, AppMsgFeedback } = require('../utils/mt');
 const {
-  MsgSend,
-  OnOffLampTurn,
-} = require('../utils/mtAppMsg');
+  lamp: lampMsg
+} = require('../utils/appMsg');
+
+const config = global.__config;
 
 const models = getModels();
 
 /**
- * @fires feedback
+ * @fires appFeedback
  */
 class MsgTransfer extends EventEmitter {
-  constructor(client, transfer) {
+  constructor({client, transfer, bridgeEp, appMsgCluster}) {
     super();
     this._client = client;
     this._transfer = transfer;
+    this._bridgeEp = bridgeEp;
+    this._appMsgCluster = appMsgCluster;
     this._client.on('areq', this._handleAreq.bind(this));
+  }
+
+  * ['_handleFeedback_lamp'] (frame) {
+    const { App } = models;
+    const { remoteNwk, remoteEp, remotePayload } = frame;
+    const [cmdType, feedback] = lampMsg.parse(remotePayload);
+    if (!cmdType) return;
+    switch (cmdType) {
+      case 'turn': {
+        const {on} = feedback;
+        const app = yield App.findOne({device: remoteNwk, endPoint: remoteEp}).exec();
+        yield app.update({
+          payload: Object.assign({}, app.payload, {on})
+        }).exec();
+        log.info(`远端lamp ${remoteNwk}.${remoteEp} 亮度改变，on:${on}`);
+        break;
+      }
+    }
+    /**
+     * @event appFeedback
+     */
+    this.emit('appFeedback', {
+      nwk: remoteNwk,
+      ep: remoteEp,
+      appType: 'lamp',
+      cmdType,
+      payload: feedback,
+    })
   }
 
   /**
@@ -38,28 +69,22 @@ class MsgTransfer extends EventEmitter {
    * @private
    */
   _handleAreq(frame) {
+    const self = this;
     if (frame instanceof AppMsgFeedback) {
-      /**
-       * @event feedback
-       * @type {FrameAreq}
-       */
-      this.emit('feedback', frame);
+      co.wrap(function * () {
+        const app = yield App.findOne({
+          device: frame.remoteNwk,
+          endPoint: frame.remoteEp
+        }).exec();
+        const handleName = `_handleFeedback_${app.type}`;
+        if (!(handleName in self)) { throw new Error(`${app.type} handler 未定义`); }
+        yield self[handleName](frame);
+      })()
+        .catch(e => {
+          log.error(e);
+          throw e
+        });
     }
-  }
-
-  /**
-   * 发送msg指令帧，写入串口后resolve
-   * @param {MsgSend} msgFrame
-   * @return {Promise}
-   * @public
-   * @see module:utils/mtAppMsg
-   */
-  send(msgFrame) {
-    return new Promise((resolve, reject) => {
-      this._transfer.write(msgFrame, null, err => {
-        if (err) { reject(err) } else { resolve() }
-      });
-    });
   }
 
   /**
@@ -70,7 +95,11 @@ class MsgTransfer extends EventEmitter {
     const {payload} = props;
     if (payload) {
       const {on: lampOn } = payload;
-      const frame = (new OnOffLampTurn(nwk, ep, lampOn)).dump();
+      const frame = new AppMsg(
+        this._bridgeEp,
+        nwk, ep,
+        this._appMsgCluster,
+        lampMsg.build('turn', lampOn));
       const srsp = yield new Promise((resolve, reject) => {
         this._transfer.once('srsp', (buf, frameObj) => {
           log.trace('收到SRSP', buf, '\n', frameObj);
@@ -123,4 +152,9 @@ class MsgTransfer extends EventEmitter {
   }
 }
 
-module.exports = new MsgTransfer(client, transfer);
+module.exports = new MsgTransfer({
+  client,
+  transfer,
+  bridgeEp: config.zigbee.bridgeEp,
+  appMsgCluster: config.zigbee.appMsgCluster,
+});

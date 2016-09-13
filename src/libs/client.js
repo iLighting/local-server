@@ -15,7 +15,6 @@ const { client: log } = require('../utils/log');
 const { getDb, getModels } = require('../db');
 const transfer = require('./frameTransfer');
 const mt = require('../utils/mt');
-const { onOfLamp } = require('../utils/mtAppMsg');
 
 
 const { parseSrsp, frameMap } = mt;

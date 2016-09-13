@@ -1,22 +1,33 @@
 /**
  * `/io`
  *
- * - `device/join.success`, FrameAreq.parsed
+ * - `device/join.success`, FrameAreq
+ * - `device/change.success`
  *
  * @module
  */
 
 const mt = require('../utils/mt');
 const clientLib = require('../libs/client');
+const msgTransfer = require('../libs/msgTransfer');
 const { clientIo: log } = require('../utils/log');
 
 
 function handleClientLibEvent(socket, areq) {
   switch (areq.name) {
     case mt.ZdoEndDeviceAnnceInd.name:
-      socket.emit('data', {type: 'device/join.success', payload: areq.parsed});
+      socket.emit('data', {type: 'device/join.success', payload: areq});
       break;
   }
+}
+
+function handleAppMsgLibEvent(socket, msg) {
+  const { nwk, ep, appType, cmdType, payload } = msg;
+  // 以device为粒度
+  socket.emit('data', {
+    type: 'device/change.success',
+    payload: { nwk, ep }
+  });
 }
 
 module.exports = function (io) {
@@ -24,16 +35,20 @@ module.exports = function (io) {
   client.on('connection', socket => {
     log.info('client io 已连接', socket.id);
     const _innerHandleClientLibEvent = handleClientLibEvent.bind(null, socket);
+    const _innerHandleAppMsgLibEvent = handleAppMsgLibEvent.bind(null, socket);
     // 监听socket事件
     socket
       .on('disconnect', () => {
         log.info('client io 已断开', socket.id);
         // 移除监听器
         clientLib.removeListener('postAreq', _innerHandleClientLibEvent);
+        msgTransfer.removeListener('appFeedback', _innerHandleAppMsgLibEvent);
       });
     // 监听内部事件
     clientLib
       .on('postAreq', _innerHandleClientLibEvent);
+    msgTransfer
+      .on('appFeedback', _innerHandleAppMsgLibEvent);
   });
 };
 

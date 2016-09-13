@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: libs/frameTransfer.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: libs/frameTransfer.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * 指令帧收发层
+ * @module
+ */
+
+const { expect } = require('chai');
+const { Writable } = require('stream');
+const { SOF, genFCS, parseFrame, isAreq, shiftFrameFromBuf, FrameSreq } = require('../utils/mt');
+const { transfer: log } = require('../utils/log');
+
+
+/**
+ * @fires sreq
+ * @fires srsp
+ * @fires areq
+ * @fires frame
+ * @see Writable
+ */
+class Transfer extends Writable {
+  constructor(props) {
+    super(props);
+    this._tempChunk = null;
+    // serial data cache
+    this._cache = new Buffer(0);
+    this._serial = require('./serial');
+    this._serial.on('data', this._handleSerialData.bind(this));
+  }
+  /**
+   * 分发frame到srsp和areq
+   * @param {Buffer} buf
+   * @param {Object} frameObj
+   * @private
+   */
+  _dispatchFrame(buf, frameObj) {
+    if (isAreq(buf)) {
+      log.trace('dispatch AREQ', buf, '\n', frameObj);
+      /**
+       * @event areq
+       *
+       * @type {Buffer}
+       * @type {Object}
+       * @property {Number} sof - SOF
+       * @property {Number} dataLen
+       * @property {Number} cmd0
+       * @property {Number} cmd1
+       * @property {Buffer} data
+       * @property {Number} fcs - FCS
+       */
+      this.emit('areq', buf, frameObj);
+    } else {
+      log.trace('dispatch SRSP', buf, '\n', frameObj);
+      /**
+       * @event srsp
+       *
+       * @type {Buffer}
+       * @type {Object}
+       * @property {Number} sof - SOF
+       * @property {Number} dataLen
+       * @property {Number} cmd0
+       * @property {Number} cmd1
+       * @property {Buffer} data
+       * @property {Number} fcs - FCS
+       */
+      this.emit('srsp', buf, frameObj)
+    }
+  }
+  _handleSerialData(chunk) {
+    this._cache = Buffer.concat([this._cache, chunk]);
+    let frameBuf = new Buffer(0);
+    let restBuf = this._cache;
+    let restEnough = true;
+    while (restEnough) {
+      [frameBuf, restBuf, restEnough] = shiftFrameFromBuf(restBuf);
+      if (frameBuf.length > 0) {
+        const frameObj = parseFrame(frameBuf);
+        log.trace('got frame', frameBuf, '\n', frameObj);
+        /**
+         * @event frame
+         *
+         * @type {Buffer}
+         * @type {Object}
+         */
+        this.emit('frame', Buffer.from(frameBuf), frameObj);
+        this._dispatchFrame(frameBuf, frameObj);
+      }
+    }
+    // 剩余长度不足
+    this._cache = restBuf;
+  }
+  _write(chunk, encoding, callback) {
+    const mtFrame = this._tempChunk;
+    this._serial.write(chunk, err => {
+      if (err) { callback(err) } else {
+        this._serial.drain(err => {
+          if (err) { callback(err) } else {
+            log.trace('指令帧已写入串口', chunk, '\n', mtFrame);
+            callback();
+            /**
+             * @event sreq
+             *
+             * @type {Buffer}
+             * @type {Frame}
+             */
+            this.emit('sreq', chunk, mtFrame);
+          }
+        })
+      }
+    })
+  }
+  /**
+   * 此处改写`write`方法，以便能接受Frame类型的chunk。
+   *
+   * 不可信地发送指令帧。当写入串口时，认为发送成功。
+   * @param {FrameSreq} chunk
+   * @param encoding
+   * @param callback
+   * @private
+   * @callback {Object} callback
+   * @see parseSrsp
+   * @memberOf Transfer
+   */
+  write(chunk, encoding, callback) {
+    expect(chunk).to.be.an.instanceOf(FrameSreq);
+    log.trace('收到指令帧，准备写入串口\n', chunk);
+    this._tempChunk = chunk;
+    super.write(chunk.dump(), encoding, callback);
+  }
+}
+
+
+module.exports = new Transfer();
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-libs_client.html">libs/client</a></li><li><a href="module-libs_frameTransfer.html">libs/frameTransfer</a></li><li><a href="module-libs_msgTransfer.html">libs/msgTransfer</a></li><li><a href="module-libs_serial.html">libs/serial</a></li><li><a href="module-libs_zigbee.html">libs/zigbee</a></li><li><a href="module-routers_client.html">routers/client</a></li><li><a href="module-socket_client.html">socket/client</a></li><li><a href="module-utils_log.html">utils/log</a></li><li><a href="module-utils_mixin.html">utils/mixin</a></li><li><a href="module-utils_msg.html">utils/msg</a></li><li><a href="module-utils_mt.html">utils/mt</a></li><li><a href="module-utils_mtAppMsg.html">utils/mtAppMsg</a></li></ul><h3>Classes</h3><ul><li><a href="module-libs_client-Client.html">Client</a></li><li><a href="module-libs_frameTransfer-Transfer.html">Transfer</a></li><li><a href="module-libs_msgTransfer-MsgTransfer.html">MsgTransfer</a></li><li><a href="module-utils_msg-Msg.html">Msg</a></li><li><a href="module-utils_mtAppMsg-OnOffLampTurn.OnOffLampTurn.html">OnOffLampTurn</a></li><li><a href="module-utils_mt-AppMsg.AppMsg.html">AppMsg</a></li><li><a href="module-utils_mt-ZdoSecDeviceRemove.ZdoSecDeviceRemove.html">ZdoSecDeviceRemove</a></li></ul><h3>Events</h3><ul><li><a href="module-libs_frameTransfer.html#~event:areq">areq</a></li><li><a href="module-libs_msgTransfer.html#~event:feedback">feedback</a></li><li><a href="module-libs_frameTransfer.html#~event:frame">frame</a></li><li><a href="module-libs_client.html#~event:postAreq">postAreq</a></li><li><a href="module-libs_frameTransfer.html#~event:sreq">sreq</a></li><li><a href="module-libs_frameTransfer.html#~event:srsp">srsp</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Sun Sep 04 2016 17:05:45 GMT+0800 (中国标准时间)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

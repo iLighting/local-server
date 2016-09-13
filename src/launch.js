@@ -12,6 +12,8 @@ const mockDb = function * (db, models) {
 };
 
 const launch = co.wrap(function * (config) {
+  // 注入 config
+  global.__config = config;
   // 初始化数据库
   const { init:initDb } = require('./db');
   const { db, models } = yield initDb(config.db.path);

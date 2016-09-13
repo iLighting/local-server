@@ -1,8 +1,6 @@
 const config = require('./config');
 const launch = require('../src/launch');
 
-global.__config = config;
-
 launch(config)
   .then(data => {
     const { db, models, app } = data;
@@ -11,4 +9,4 @@ launch(config)
   })
   .catch(e => {
     console.log(e.stack)
-  })
+  });
