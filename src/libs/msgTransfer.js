@@ -16,7 +16,8 @@ const transfer = require('./frameTransfer');
 const { msgTransfer: log } = require('../utils/log');
 const { parseSrsp, isAreq, AppMsg, AppMsgFeedback } = require('../utils/mt');
 const {
-  lamp: lampMsg
+  lamp: lampMsg,
+  pulse: pulseMsg,
 } = require('../utils/appMsg');
 
 const config = global.__config;
@@ -37,14 +38,13 @@ class MsgTransfer extends EventEmitter {
     this._client.on('areq', this._handleAreq.bind(this));
   }
 
-  * ['_handleFeedback_lamp'] (frame) {
-    const { App } = models;
+  * _handleFeedback_lamp (frame) {
+    const { App } = this._models;
     const { RemoteNwk, RemoteEp, RemotePayload } = frame.parsed;
     const [cmdType, feedback] = lampMsg.parse(RemotePayload);
-    log.trace(RemoteNwk, RemoteEp, RemotePayload, cmdType, feedback);
     if (!cmdType) return;
     switch (cmdType) {
-      case 'turn': {
+      case 'turnFeedback': {
         const {on} = feedback;
         const app = yield App.findOne({device: RemoteNwk, endPoint: RemoteEp}).exec();
         yield app.update({
@@ -61,6 +61,34 @@ class MsgTransfer extends EventEmitter {
       nwk: RemoteNwk,
       ep: RemoteEp,
       appType: 'lamp',
+      cmdType,
+      payload: feedback,
+    })
+  }
+
+  * _handleFeedback_pulse (frame) {
+    const { App } = this._models;
+    const { RemoteNwk, RemoteEp, RemotePayload } = frame.parsed;
+    const [cmdType, feedback] = pulseMsg.parse(RemotePayload);
+    if (!cmdType) return;
+    switch (cmdType) {
+      case 'pulseFeedback': {
+        const { transId } = feedback;
+        const app = yield App.findOne({device: RemoteNwk, endPoint: RemoteEp}).exec();
+        yield app.update({
+          payload: Object.assign({}, app.payload, {transId})
+        }).exec();
+        log.info(`远端pulse ${RemoteNwk}.${RemoteEp} 被触发，transId:${transId}`);
+        break;
+      }
+    }
+    /**
+     * @event appFeedback
+     */
+    this.emit('appFeedback', {
+      nwk: RemoteNwk,
+      ep: RemoteEp,
+      appType: 'pulse',
       cmdType,
       payload: feedback,
     })
@@ -102,7 +130,7 @@ class MsgTransfer extends EventEmitter {
   /**
    * @private
    */
-  * ['_setAppProps_lamp'] (nwk, ep, props) {
+  * _setAppProps_lamp (nwk, ep, props) {
     log.info(`开始同步远端Lamp ${nwk}.${ep}\n`, props);
     const {payload} = props;
     if (payload) {
@@ -131,6 +159,10 @@ class MsgTransfer extends EventEmitter {
       }
       log.trace('指令帧下达成功', srsp, '\n', srspObj);
     }
+  }
+
+  * _setAppProps_pulse (nwk, ep, props) {
+    // 暂无同步项
   }
 
   /**

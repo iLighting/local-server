@@ -27,7 +27,7 @@ lamp = {
         return ['turn', {on: !!buf.readUInt8(1)}];
       // turn feedback
       case 1:
-        return ['turn', {on: !!buf.readUInt8(1)}];
+        return ['turnFeedback', {on: !!buf.readUInt8(1)}];
       default:
         return [];
     }
@@ -35,6 +35,21 @@ lamp = {
 };
 Object.freeze(lamp);
 
+pulse = {
+  parse(buf) {
+    const cmdId = buf.readUInt8(0);
+    switch (cmdId) {
+      // pulse feedback
+      case 0:
+        return ['pulseFeedback', {transId: buf.readUInt8(1)}];
+      default:
+        return [];
+    }
+  }
+};
+Object.freeze(pulse);
+
 module.exports = {
   lamp,
+  pulse,
 };

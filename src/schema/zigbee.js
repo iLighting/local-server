@@ -62,7 +62,17 @@ const appSchema = new Schema({
   type: {
     $type: String,
     required: true,
-    enum: ['lamp', 'gray-lamp', 'switch', 'gray-switch', 'light-sensor']
+    enum: [
+      // lamp
+      'lamp',
+      'gray-lamp',
+      // switch
+      'switch',
+      'gray-switch',
+      'pulse',
+      // sensor
+      'light-sensor',
+    ]
   },
   payload: {
     $type: Schema.Types.Mixed,
@@ -93,12 +103,23 @@ appSchema.pre('validate', function(next) {
     try {
       expect(payload).to.have.property('on').that.is.a('boolean');
     } catch(e) { next(e) }
-  } else if (type=='gray-lamp') {
+  }
+  else if (type=='gray-lamp') {
     try {
       expect(payload).to.have.property('level');
       expect(payload.level).to.be.a('number');
       expect(payload.level).to.be.within(0,100);
     } catch(e) { next(e) }
+  }
+  else if (type=='switch') {
+    try {
+      expect(payload).to.have.property('on').that.is.a('boolean')
+    } catch (e) { next(e) }
+  }
+  else if (type=='pulse') {
+    try {
+      expect(payload).to.have.property('transId').that.is.a('number')
+    } catch (e) { next(e) }
   }
   next();
 });

@@ -11,13 +11,13 @@ function genIeee () {
 const genApps = function () {
   return [8,9].map(ep => mock({
     'endPoint': ep,
-    'type|1': ['lamp'],
+    'type|1': ['pulse'],
     'name': '@email',
     'payload': function () {
       if (this.type == 'lamp') {
         return {on: false}
-      } else if (this.type == 'light-sensor') {
-        return {}
+      } else if (this.type == 'pulse') {
+        return {transId: Math.floor(Math.random()*10000)}
       } else {
         return {}
       }
