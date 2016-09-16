@@ -1,16 +1,22 @@
 
 const { genFrame } = require('../utils/mt');
 
-module.exports = function * (put, take) {
-  let t ;
-  // setTimeout(() => {
-  //   const buf = genFrame(
-  //     0x45, 0xc1,
-  //     Buffer.from([0xaa, 0xbb, 0xcc, 0xdd, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0xaa, 0xbb, 0xff]));
-  //   put(buf);
-  // }, 10000);
-  while (true) {
-    t = yield take();
-    put(genFrame(0x69, 0, Buffer.from([0])));
-  }
+function frame(cmd0, cmd1, bl) {
+  return genFrame(cmd0, cmd1, Buffer.from(bl));
+}
+
+module.exports = function (serial) {
+  serial.on('chunk', chunk => {
+    serial.put(frame(0x69, 0, [0]));
+  });
+
+  setTimeout(() => {
+    // device join
+    serial.put(frame(0x45, 0xc1, [0xaa,0xbb,0xcc,0xdd,0xaa,0xbb,0xcc,0xdd,0xee,0xff,0xaa,0xbb,0xff]));
+  }, 3000);
+
+  // 模拟不停开关灯
+  setInterval(() => {
+    serial.put(frame(0x49, 0, [0,1, 8, 0xff,0, 2, 1,Math.random() > 0.5 ? 1 : 0]))
+  }, 5000);
 };

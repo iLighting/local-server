@@ -62,6 +62,10 @@ class Client extends EventEmitter {
     log.info(`新设备已加入 @${NwkAddr}\n`, areq.parsed);
   }
 
+  * _handle_AppMsgFeedback (areq) {
+    // 什么也不做，由msgTransfer处理
+  }
+
   /**
    * 根据AREQ，修改数据库，并发出一些事件
    * @param {Frame} areq
@@ -71,7 +75,7 @@ class Client extends EventEmitter {
     if (!(handlerName in this)) {
       const err = `${handlerName} 处理器未定义`;
       log.error(err);
-      throw new Error(err);
+      return
     }
     co.wrap(this[handlerName].bind(this))(areq)
       .then(() => {

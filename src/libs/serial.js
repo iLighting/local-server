@@ -12,11 +12,17 @@ const { genFrame } = require('../utils/mt');
 class SerialMock extends Writable {
   constructor(props) {
     super(props);
-    this._cache = new Buffer(0);
+    this._cache = [];
   }
+
+  /**
+   * @param chunk
+   * @param encoding
+   * @param callback
+   * @private
+   */
   _write(chunk, encoding, callback) {
-    log.trace('write', chunk);
-    this.emit('chunk', chunk);
+    this._cache.push(chunk);
     callback();
   }
   /**
@@ -29,15 +35,11 @@ class SerialMock extends Writable {
   }
   drain(callback) {
     callback(null);
+    this._cache.forEach(chunk => this.emit('chunk', chunk));
+    this._cache = [];
   }
   put(buf) {
-    this._cache = Buffer.concat([this._cache, buf]);
-    this._feedback(this._cache);
-  }
-  take() {
-    return new Promise((resolve, reject) => {
-      this.once('chunk', resolve);
-    });
+    this._feedback(buf);
   }
 }
 
@@ -45,9 +47,6 @@ const serial = new SerialMock();
 
 // mock
 const mock = require('../mock/serial');
-co.wrap(mock)(
-  serial.put.bind(serial),
-  serial.take.bind(serial)
-);
+mock(serial);
 
 module.exports = serial;

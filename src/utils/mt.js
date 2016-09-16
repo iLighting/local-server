@@ -377,17 +377,19 @@ class AppMsgFeedback extends FrameAreq {
   constructor(buf) {
     super(buf);
     const { data } = this.preParse(buf);
-    const remoteNwk = data.readUInt8(0);
-    const remoteEp = data.readUInt8(1);
-    const clusterId = data.readUInt16BE(2);
-    const msgLen = data.readUInt8(4);
+    const remoteNwk = data.readUInt16BE(0);
+    const remoteEp = data.readUInt8(2);
+    const clusterId = data.readUInt16BE(3);
+    const msgLen = data.readUInt8(5);
     const payload = new Buffer(msgLen);
-    data.copy(payload, 0, 5);
+    data.copy(payload, 0, 6);
     // inject
-    this.remoteNwk = remoteNwk;
-    this.remoteEp = remoteEp;
-    this.clusterId = clusterId;
-    this.remotePayload = payload;
+    this.parsed = this.genParsedValue({
+      'RemoteNwk': remoteNwk,
+      'RemoteEp': remoteEp,
+      'ClusterId': clusterId,
+      'RemotePayload': payload
+    });
   }
 }
 Object.defineProperties(AppMsgFeedback, {

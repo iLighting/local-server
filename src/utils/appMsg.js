@@ -25,6 +25,9 @@ lamp = {
       // turn
       case 0:
         return ['turn', {on: !!buf.readUInt8(1)}];
+      // turn feedback
+      case 1:
+        return ['turn', {on: !!buf.readUInt8(1)}];
       default:
         return [];
     }

@@ -27,8 +27,9 @@ const models = getModels();
  * @fires appFeedback
  */
 class MsgTransfer extends EventEmitter {
-  constructor({client, transfer, bridgeEp, appMsgCluster}) {
+  constructor({models, client, transfer, bridgeEp, appMsgCluster}) {
     super();
+    this._models = models;
     this._client = client;
     this._transfer = transfer;
     this._bridgeEp = bridgeEp;
@@ -38,17 +39,18 @@ class MsgTransfer extends EventEmitter {
 
   * ['_handleFeedback_lamp'] (frame) {
     const { App } = models;
-    const { remoteNwk, remoteEp, remotePayload } = frame;
-    const [cmdType, feedback] = lampMsg.parse(remotePayload);
+    const { RemoteNwk, RemoteEp, RemotePayload } = frame.parsed;
+    const [cmdType, feedback] = lampMsg.parse(RemotePayload);
+    log.trace(RemoteNwk, RemoteEp, RemotePayload, cmdType, feedback);
     if (!cmdType) return;
     switch (cmdType) {
       case 'turn': {
         const {on} = feedback;
-        const app = yield App.findOne({device: remoteNwk, endPoint: remoteEp}).exec();
+        const app = yield App.findOne({device: RemoteNwk, endPoint: RemoteEp}).exec();
         yield app.update({
           payload: Object.assign({}, app.payload, {on})
         }).exec();
-        log.info(`远端lamp ${remoteNwk}.${remoteEp} 亮度改变，on:${on}`);
+        log.info(`远端lamp ${RemoteNwk}.${RemoteEp} 亮度改变，on:${on}`);
         break;
       }
     }
@@ -56,8 +58,8 @@ class MsgTransfer extends EventEmitter {
      * @event appFeedback
      */
     this.emit('appFeedback', {
-      nwk: remoteNwk,
-      ep: remoteEp,
+      nwk: RemoteNwk,
+      ep: RemoteEp,
       appType: 'lamp',
       cmdType,
       payload: feedback,
@@ -71,14 +73,24 @@ class MsgTransfer extends EventEmitter {
   _handleAreq(frame) {
     const self = this;
     if (frame instanceof AppMsgFeedback) {
+      const { App } = this._models;
+      const { RemoteNwk, RemoteEp } = frame.parsed;
+
       co.wrap(function * () {
+
         const app = yield App.findOne({
-          device: frame.remoteNwk,
-          endPoint: frame.remoteEp
+          device: RemoteNwk,
+          endPoint: RemoteEp
         }).exec();
+
         const handleName = `_handleFeedback_${app.type}`;
         if (!(handleName in self)) { throw new Error(`${app.type} handler 未定义`); }
-        yield self[handleName](frame);
+        log.trace(`开始处理 ${app.type}@${RemoteNwk}.${RemoteEp}`);
+
+        try {
+          yield self[handleName](frame);
+        } catch (e) { log.error(e); }
+
       })()
         .catch(e => {
           log.error(e);
@@ -153,6 +165,7 @@ class MsgTransfer extends EventEmitter {
 }
 
 module.exports = new MsgTransfer({
+  models,
   client,
   transfer,
   bridgeEp: config.zigbee.bridgeEp,
