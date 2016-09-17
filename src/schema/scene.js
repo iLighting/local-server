@@ -3,7 +3,7 @@ const { expect } = require('chai');
 const { Schema } = require('mongoose');
 
 
-const StaticSceneItemSchema = new Schema({
+const staticSceneItemSchema = new Schema({
   // 以mac地址为准
   ieee: {$type: String, required: true},
   ep: {$type: Number, min: 0, max: 255},
@@ -21,10 +21,10 @@ const StaticSceneItemSchema = new Schema({
   typeKey: '$type',
   minimize: false,
 });
-StaticSceneItemSchema.name = 'StaticSceneItem';
+staticSceneItemSchema.name = 'StaticSceneItem';
 
 
-const StaticSceneSchema = new Schema({
+const staticSceneSchema = new Schema({
   name: { $type: String, required: true },
   items: [Schema.Types.ObjectId]
 }, {
@@ -40,10 +40,10 @@ const StaticSceneSchema = new Schema({
   typeKey: '$type',
   minimize: false,
 });
-StaticSceneSchema.name = 'StaticScene';
+staticSceneSchema.name = 'StaticScene';
 
 
 module.exports = {
-  [StaticSceneItemSchema.name]: StaticSceneItemSchema,
-  [StaticSceneSchema.name]: StaticSceneSchema,
+  [staticSceneItemSchema.name]: staticSceneItemSchema,
+  [staticSceneSchema.name]: staticSceneSchema,
 };

@@ -25,7 +25,7 @@ const body = require('co-body');
 const { app: log } = require('../utils/log');
 const _ = require('lodash');
 const Msg = require('../utils/msg');
-const proxy = require('../libs/proxy').getIns();
+const proxy = require('../libs/proxy').getIns('manual');
 
 // api 接口
 // -------------------------

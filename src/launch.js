@@ -13,17 +13,30 @@ const mockDb = function * (db, models) {
   yield mockDate.map(devReq => deviceJoin(devReq));
 };
 
+function * createSysStatus() {
+  const { create } = require('./libs/sys');
+  const ins = create();
+  yield ins.createStatus({
+    mode: 'manual'
+  })
+}
+
 const launch = co.wrap(function * (config) {
   // 注入 config
-  global.__config = config;
+  // global.__config = config;
   // 初始化数据库
   const { init:initDb } = require('./db');
   const { db, models } = yield initDb(config.db.path);
   // mock数据库
   yield mockDb(db, models);
   log.debug('mock数据库');
+  // 初始化系统状态
+  yield createSysStatus();
   // 初始化lib proxy
-  require('./libs/proxy').create(config.zigbee.bridgeEp, config.zigbee.appMsgCluster);
+  yield require('./libs/proxy').init({
+    bridgeEp: config.zigbee.bridgeEp,
+    appMsgCluster: config.zigbee.appMsgCluster
+  });
   // 初始化Server
   const app = require('./app');
   app.context.mount = {};

@@ -1,5 +1,24 @@
+/**
+ * 场景API
+ *
+ * - /api/scene/current
+ *  - GET：获取当前场景
+ *  - PUT：修改当前场景
+ *
+ * - /api/scene/store/static
+ *  - GET：获取静态场景列表
+ *  - POST：新增静态场景
+ *
+ * - /api/scene/store/static/:id
+ *  - GET：获取指定静态场景
+ *  - PUT：修改指定静态场景
+ *
+ * @module
+ */
+
 const co = require('co');
 const { expect } = require('chai');
+const sysStatus = require('../libs/sys').getIns();
 const Router = require('koa-router');
 const body = require('co-body');
 const { app: log } = require('../utils/log');
@@ -10,7 +29,21 @@ const router = new Router({
   prefix: '/api'
 });
 
-router.get('/scene/static', function * (next) {
+
+router
+  .get('/scene/current', function * (next) {
+    const { mode, scene } = sysStatus.getStatus();
+    if (mode == 'manual') {
+      this.body = new Msg(null)
+    } else {
+      this.body = new Msg(scene)
+    }
+  })
+  .put('/scene/current', function * (next) {
+
+  });
+
+router.get('/scene/store/static', function * (next) {
   const { StaticScene, StaticSceneItem } = this.mount.models;
   try {
     const staticSceneList = yield StaticScene.find().exec();
@@ -32,7 +65,7 @@ router.get('/scene/static', function * (next) {
   }
 });
 
-router.get('/scene/static/:id', function * (next) {
+router.get('/scene/store/static/:id', function * (next) {
   const { StaticScene, StaticSceneItem } = this.mount.models;
   const { id: sid } = this.params;
   try {
@@ -49,7 +82,7 @@ router.get('/scene/static/:id', function * (next) {
   }
 });
 
-router.post('/scene/static', function * (next) {
+router.post('/scene/store/static', function * (next) {
   const { StaticScene, StaticSceneItem } = this.mount.models;
   const query = yield body.json(this);
   try {
@@ -71,7 +104,7 @@ router.post('/scene/static', function * (next) {
   }
 });
 
-router.put('/scene/static/:id', function * (next) {
+router.put('/scene/store/static/:id', function * (next) {
   const { StaticScene, StaticSceneItem } = this.mount.models;
   const query = yield body.json(this);
   const { id: sid } = this.params;
