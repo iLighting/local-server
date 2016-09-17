@@ -8,8 +8,6 @@
  */
 
 const mt = require('../utils/mt');
-const clientLib = require('../libs/zigbee/frameHandler');
-const msgTransfer = require('../libs/zigbee/msgTransfer');
 const proxy = require('../libs/proxy').getIns();
 const { clientIo: log } = require('../utils/log');
 
@@ -42,7 +40,7 @@ module.exports = function (io) {
       .on('disconnect', () => {
         log.info('client io 已断开', socket.id);
         // 移除监听器
-        proxy.remoteListener('frame:areqProcessed', _innerHandleClientLibEvent);
+        proxy.removeListener('frame:areqProcessed', _innerHandleClientLibEvent);
         proxy.removeListener('app:feedback', _innerHandleAppMsgLibEvent);
       });
     // 监听内部事件
