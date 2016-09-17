@@ -1,4 +1,5 @@
 module.exports = Object.assign(
   {},
-  require('./zigbee')
+  require('./zigbee'),
+  require('./scene')
 );
