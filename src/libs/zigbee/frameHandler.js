@@ -8,27 +8,17 @@
  */
 
 const co = require('co');
-const { expect } = require('chai');
-const pry = require('promisify-node');
 const { EventEmitter } = require('events');
-const { client: log } = require('../utils/log');
-const { getDb, getModels } = require('../db');
-const transfer = require('./frameTransfer');
-const mt = require('../utils/mt');
-
-
-const { parseSrsp, frameMap } = mt;
-
-const db = getDb();
-const models = getModels();
+const { client: log } = require('../../utils/log');
+const mt = require('../../utils/mt');
 
 
 /**
  * @fires areq - 解析好的AREQ指令帧实例
  * @fires postAreq - AREQ指令帧处理完毕
  */
-class Client extends EventEmitter {
-  constructor(transfer, frameMap, models) {
+class FrameHandler extends EventEmitter {
+  constructor({transfer, frameMap, models}) {
     super();
     this._models = models;
     this._frameMap = frameMap;
@@ -92,10 +82,4 @@ class Client extends EventEmitter {
   }
 }
 
-const client = new Client(
-  transfer,
-  frameMap,
-  models
-);
-
-module.exports = client;
+module.exports = FrameHandler;

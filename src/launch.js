@@ -1,5 +1,5 @@
 const co = require('co');
-const { sys:sysLog } = require('./utils/log');
+const { sys:log } = require('./utils/log');
 
 const mockDb = function * (db, models) {
   // 清空数据库
@@ -21,7 +21,9 @@ const launch = co.wrap(function * (config) {
   const { db, models } = yield initDb(config.db.path);
   // mock数据库
   yield mockDb(db, models);
-  sysLog.debug('mock数据库');
+  log.debug('mock数据库');
+  // 初始化lib proxy
+  require('./libs/proxy').create(config.zigbee.bridgeEp, config.zigbee.appMsgCluster);
   // 初始化Server
   const app = require('./app');
   app.context.mount = {};
@@ -33,7 +35,7 @@ const launch = co.wrap(function * (config) {
   require('./socket')(io);
   // 启动
   server.listen(config.server.port);
-  sysLog.mark('应用启动成功，端口号 %s', config.server.port);
+  log.mark('应用启动成功，端口号 %s', config.server.port);
   return { db, models, app };
 });
 

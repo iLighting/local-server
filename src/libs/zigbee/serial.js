@@ -4,9 +4,8 @@
  */
 
 const co = require('co');
-const { Writable, Duplex } = require('stream');
-const { serial: log } = require('../utils/log');
-const { genFrame } = require('../utils/mt');
+const { Writable } = require('stream');
+const { serial: log } = require('../../utils/log');
 
 
 class SerialMock extends Writable {
@@ -46,7 +45,7 @@ class SerialMock extends Writable {
 const serial = new SerialMock();
 
 // mock
-const mock = require('../mock/serial');
+const mock = require('../../mock/serial');
 mock(serial);
 
 module.exports = serial;

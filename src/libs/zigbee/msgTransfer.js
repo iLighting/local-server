@@ -7,22 +7,15 @@
  * @module
  */
 
-const { expect } = require('chai');
 const co = require('co');
 const { EventEmitter } = require('events');
-const { getDb, getModels } = require('../db');
-const client = require('./client');
-const transfer = require('./frameTransfer');
-const { msgTransfer: log } = require('../utils/log');
-const { parseSrsp, isAreq, AppMsg, AppMsgFeedback } = require('../utils/mt');
+const { msgTransfer: log } = require('../../utils/log');
+const { parseSrsp, AppMsg, AppMsgFeedback } = require('../../utils/mt');
 const {
   lamp: lampMsg,
   pulse: pulseMsg,
-} = require('../utils/appMsg');
+} = require('../../utils/appMsg');
 
-const config = global.__config;
-
-const models = getModels();
 
 /**
  * @fires appFeedback
@@ -196,10 +189,5 @@ class MsgTransfer extends EventEmitter {
   }
 }
 
-module.exports = new MsgTransfer({
-  models,
-  client,
-  transfer,
-  bridgeEp: config.zigbee.bridgeEp,
-  appMsgCluster: config.zigbee.appMsgCluster,
-});
+
+module.exports = MsgTransfer;

@@ -25,8 +25,7 @@ const body = require('co-body');
 const { app: log } = require('../utils/log');
 const _ = require('lodash');
 const Msg = require('../utils/msg');
-const clientLib = require('../libs/client');
-const msgTransfer = require('../libs/msgTransfer');
+const proxy = require('../libs/proxy').getIns();
 
 // api 接口
 // -------------------------
@@ -115,7 +114,7 @@ router.put(`${apiPrefix}/device/nwk/:nwk/ep/:ep`, function * (next) {
   name && (updateReq.name = name);
   payload && (updateReq.payload = payload);
   try {
-    const app = yield msgTransfer.setAppProps(nwk, ep, updateReq);
+    const app = yield proxy.setAppProps(nwk, ep, updateReq);
     this.body = new Msg(_.pick(app, [
       'device', 'endPoint', 'type', 'name', 'payload',
     ]));

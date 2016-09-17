@@ -5,8 +5,8 @@
 
 const { expect } = require('chai');
 const { Writable } = require('stream');
-const { SOF, genFCS, parseFrame, isAreq, shiftFrameFromBuf, FrameSreq } = require('../utils/mt');
-const { transfer: log } = require('../utils/log');
+const { parseFrame, isAreq, shiftFrameFromBuf, FrameSreq } = require('../../utils/mt');
+const { transfer: log } = require('../../utils/log');
 
 
 /**
@@ -17,12 +17,12 @@ const { transfer: log } = require('../utils/log');
  * @see Writable
  */
 class Transfer extends Writable {
-  constructor(props) {
-    super(props);
+  constructor({serial}) {
+    super();
     this._tempChunk = null;
     // serial data cache
     this._cache = new Buffer(0);
-    this._serial = require('./serial');
+    this._serial = serial;
     this._serial.on('data', this._handleSerialData.bind(this));
   }
   /**
@@ -128,4 +128,4 @@ class Transfer extends Writable {
 }
 
 
-module.exports = new Transfer();
+module.exports = Transfer;
