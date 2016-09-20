@@ -4,6 +4,7 @@ const { Schema } = require('mongoose');
 
 
 const staticSceneItemSchema = new Schema({
+  scene: Schema.Types.ObjectId,
   // 以mac地址为准
   ieee: {$type: String, required: true},
   ep: {$type: Number, min: 0, max: 255},
@@ -25,8 +26,7 @@ staticSceneItemSchema.name = 'StaticSceneItem';
 
 
 const staticSceneSchema = new Schema({
-  name: { $type: String, required: true },
-  items: [Schema.Types.ObjectId]
+  name: { $type: String, required: true }
 }, {
   timestamps: true,
   toObject: {

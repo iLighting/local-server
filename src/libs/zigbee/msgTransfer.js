@@ -168,7 +168,7 @@ class MsgTransfer extends EventEmitter {
    */
   setAppProps(nwk, ep, props) {
     return co.wrap(function * (self) {
-      const { App } = models;
+      const { App } = self._models;
       const app = yield App.findOne({device: nwk, endPoint: ep}).exec();
       const { type: appType } = app;
       // app sync handler

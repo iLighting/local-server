@@ -3,14 +3,15 @@ const { sys:log } = require('./utils/log');
 
 const mockDb = function * (db, models) {
   // 清空数据库
-  const { Device, App, StaticScene, StaticSceneItem } = models;
-  yield Device.remove().exec();
-  yield App.remove().exec();
-  yield StaticScene.remove().exec();
-  yield StaticSceneItem.remove().exec();
-  const mockDate = require('./mock/db')();
-  const { deviceJoin } = require('./libs/zigbee');
-  yield mockDate.map(devReq => deviceJoin(devReq));
+  // const { Device, App, StaticScene, StaticSceneItem } = models;
+  // yield Device.remove().exec();
+  // yield App.remove().exec();
+  // yield StaticScene.remove().exec();
+  // yield StaticSceneItem.remove().exec();
+  // const mockDate = require('./mock/db')();
+  // const { deviceJoin } = require('./libs/zigbee');
+  // yield mockDate.map(devReq => deviceJoin(devReq));
+  yield require('./mock/db2')(models);
 };
 
 function * createSysStatus() {

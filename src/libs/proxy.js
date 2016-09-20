@@ -62,7 +62,7 @@ class Proxy extends EventEmitter {
    */
   setAppProps(nwk, ep, props) {
     if (this._isModeAllow()) {
-      return this._msgTransfer(nwk, ep, props);
+      return this._msgTransfer.setAppProps(nwk, ep, props);
     } else {
       return Promise.reject(new Error(`${this._mode}已被禁用`))
     }
