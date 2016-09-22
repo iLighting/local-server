@@ -4,11 +4,14 @@ const { getModels } = require('../db');
 
 const models = getModels();
 
+/**
+ * @fires change
+ */
 class Sys extends EventEmitter {
   constructor({models}) {
     super();
     this._models = models;
-    this._catch = {};
+    this._cache = {};
   }
 
   * _currentStatus() {
@@ -30,7 +33,7 @@ class Sys extends EventEmitter {
     const { SysStatus } = this._models;
     return co.wrap(function * () {
       yield SysStatus.create(obj);
-      self._catch = obj;
+      self._cache = obj;
     })();
   }
 
@@ -42,11 +45,14 @@ class Sys extends EventEmitter {
    */
   setStatus(obj) {
     const self = this;
-    const { SysStatus } = this._models;
     return co.wrap(function * () {
-      const status = yield this._currentStatus();
+      const status = yield self._currentStatus();
       yield status.update(obj).exec();
-      Object.assign(self._catch, obj);
+      Object.assign(self._cache, obj);
+      /**
+       * @event change
+       */
+      self.emit('change', Object.assign({}, self._cache));
     })();
   }
 
@@ -55,7 +61,7 @@ class Sys extends EventEmitter {
    * @return {Object}
    */
   getStatus() {
-    return Object.assign({}, this._catch);
+    return Object.assign({}, this._cache);
   }
 }
 

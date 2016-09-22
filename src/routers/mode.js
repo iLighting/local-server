@@ -5,7 +5,7 @@ const body = require('co-body');
 const { app: log } = require('../utils/log');
 const _ = require('lodash');
 const Msg = require('../utils/msg');
-const { currentMode, setMode } = require('../libs/proxy');
+const sysStatus = require('../libs/sys').getIns();
 
 const router = new Router({
   prefix: '/api'
@@ -14,17 +14,18 @@ const router = new Router({
 router
   .get('/mode', function * (next) {
     try {
-      this.body = new Msg(currentMode());
+      const { mode } = sysStatus.getStatus();
+      this.body = new Msg(mode);
     } catch (e) {
       log.error(e);
       this.body = new Msg(null, e);
     }
   })
   .put('/mode', function * (next) {
-    const mode = yield body.json(this);
+    const { mode } = yield body.json(this);
     try {
-      setMode(mode);
-      this.body = new Msg(currentMode());
+      yield sysStatus.setStatus({mode});
+      this.body = new Msg(mode);
     } catch (e) {
       log.error(e);
       this.body = new Msg(mode, e);

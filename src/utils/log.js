@@ -21,4 +21,5 @@ module.exports = {
   msgTransfer: log4js.getLogger('msgTransfer'),
   proxy: log4js.getLogger('proxy'),
   clientIo: log4js.getLogger('clientIo'),
+  staticScene: log4js.getLogger('staticScene'),
 };

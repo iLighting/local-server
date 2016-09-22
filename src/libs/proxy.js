@@ -73,10 +73,8 @@ class Proxy extends EventEmitter {
 Proxy.mode = 'manual';
 Proxy.insMap = {};
 
-
 /**
  * @fires init
- * @fires modeChange
  */
 const event = new EventEmitter;
 
@@ -106,6 +104,10 @@ const proxyInterface = {
       appMsgCluster: Proxy.appMsgCluster,
     });
     Proxy.mode = sysStatus.getStatus().mode;
+    // 监听sys变化
+    sysStatus.on('change', status => {
+      Proxy.mode = status.mode;
+    });
     /**
      * @event init
      */
@@ -133,22 +135,6 @@ const proxyInterface = {
     }
     log.trace(`已生成 ${mode} 实例`);
     return Proxy.insMap[mode];
-  },
-
-  /**
-   * 切换模式
-   * @param {String} mode
-   */
-  setMode(mode) {
-    log.trace(`切换模式为 ${mode}`);
-    Proxy.mode = mode;
-    /**
-     * @event modeChange
-     */
-    event.emit('modeChange', mode);
-  },
-  currentMode() {
-    return Proxy.mode;
   },
 };
 
