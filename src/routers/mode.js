@@ -11,24 +11,24 @@ const router = new Router({
   prefix: '/api'
 });
 
-router.get('/mode', function * (next) {
-  try {
-    this.body = new Msg(currentMode());
-  } catch (e) {
-    log.error(e);
-    this.body = new Msg(null, e);
-  }
-});
-
-router.put('/mode', function * (next) {
-  const mode = yield body.json(this);
-  try {
-    setMode(mode);
-    this.body = new Msg(currentMode());
-  } catch (e) {
-    log.error(e);
-    this.body = new Msg(mode, e);
-  }
-});
+router
+  .get('/mode', function * (next) {
+    try {
+      this.body = new Msg(currentMode());
+    } catch (e) {
+      log.error(e);
+      this.body = new Msg(null, e);
+    }
+  })
+  .put('/mode', function * (next) {
+    const mode = yield body.json(this);
+    try {
+      setMode(mode);
+      this.body = new Msg(currentMode());
+    } catch (e) {
+      log.error(e);
+      this.body = new Msg(mode, e);
+    }
+  });
 
 module.exports = router.routes();

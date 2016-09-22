@@ -73,20 +73,6 @@ class Proxy extends EventEmitter {
 Proxy.mode = 'manual';
 Proxy.insMap = {};
 
-// 准备实例
-Proxy._serial = serial;
-Proxy._frameTransfer = new FrameTransfer({serial: Proxy._serial});
-Proxy._frameHandler = new FrameHandler({
-  transfer: Proxy._frameTransfer,
-  frameMap, models
-});
-Proxy._msgTransfer = new MsgTransfer({
-  models,
-  client: Proxy._frameHandler,
-  transfer: Proxy._frameTransfer,
-  bridge: Proxy.bridgeEp,
-  appMsgCluster: Proxy.appMsgCluster,
-});
 
 /**
  * @fires init
@@ -105,6 +91,20 @@ const proxyInterface = {
   init({bridgeEp, appMsgCluster}) {
     Proxy.bridgeEp = bridgeEp;
     Proxy.appMsgCluster = appMsgCluster;
+    // 准备实例
+    Proxy._serial = serial;
+    Proxy._frameTransfer = new FrameTransfer({serial: Proxy._serial});
+    Proxy._frameHandler = new FrameHandler({
+      transfer: Proxy._frameTransfer,
+      frameMap, models
+    });
+    Proxy._msgTransfer = new MsgTransfer({
+      models,
+      client: Proxy._frameHandler,
+      transfer: Proxy._frameTransfer,
+      bridgeEp: Proxy.bridgeEp,
+      appMsgCluster: Proxy.appMsgCluster,
+    });
     Proxy.mode = sysStatus.getStatus().mode;
     /**
      * @event init

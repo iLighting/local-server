@@ -19,6 +19,18 @@ const devDesc = [
     name: `router@1`,
     apps: [{
       endPoint: 8,
+      type: 'lamp',
+      name: '灯具2',
+      payload: {on: true}
+    }]
+  },
+  {
+    nwk: 2,
+    ieee: '00-00-00-00-00-00-01-00',
+    type: 'router',
+    name: `router@1`,
+    apps: [{
+      endPoint: 8,
       type: 'pulse',
       name: '轻触开关1',
       payload: {transId: 1}
@@ -31,6 +43,10 @@ const sceneDesc = [
     name: '场景1',
     items: [{
       ieee: '00-00-00-00-00-00-00-00',
+      ep: 8,
+      scenePayload: {on: false}
+    }, {
+      ieee: '00-00-00-00-00-00-00-01',
       ep: 8,
       scenePayload: {on: false}
     }]

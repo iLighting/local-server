@@ -154,16 +154,8 @@ router.put('/scene/store/static/id/:id', function * (next) {
   const query = yield body.json(this);
   const { id: sid } = this.params;
   try {
-    const { name, items } = query;
-    const sScene = yield StaticScene.findById(sid).exec();
-    if (sScene) {
-      // yield sScene.items.map(itemId => StaticSceneItem.findByIdAndRemove(itemId).exec());
-      yield StaticSceneItem.remove({scene: sScene.id}).exec();
-      // yield sItems = yield items.map(item => StaticSceneItem.create(item));
-      // yield sScene.update({name, items: sItems.map(item => item.id)}).exec();
-      // TODO: scene修改逻辑
-      this.body = new Msg(query);
-    } else { throw new Error(`${sid} 场景不存在`) }
+    // TODO: scene修改逻辑
+    this.body = new Msg(query);
   } catch (e) {
     log.error(e);
     this.body = new Msg(query, e);
