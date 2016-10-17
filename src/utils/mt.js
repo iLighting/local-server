@@ -67,10 +67,10 @@ const _genFrame = function (cmd0, cmd1, data) {
  * 解析MT指令帧
  * @private
  * @param {Buffer} frame
- * @return {Object|Boolean}
+ * @return {Object}
+ * @throws fcs校验失败
  */
 const _parseFrame = function (frame) {
-  expect(frame).to.be.an.instanceOf(Buffer);
   const dl = frame.readUInt8(1);
   const cmd0 = frame.readUInt8(2);
   const cmd1 = frame.readUInt8(3);
@@ -79,9 +79,8 @@ const _parseFrame = function (frame) {
   const fcs = frame.readUInt8(4+dl);
   if (_genFcs(frame.slice(1, frame.length-1)) == fcs) {
     return { cmd0, cmd1, data };
-  } else {
-    return false;
   }
+  throw new Error(`${frame} fcs 校验失败`);
 };
 
 const actions = new Map();
@@ -89,23 +88,21 @@ const actions = new Map();
 /**
  * 解析MT srsp指令
  * @param {Buffer} srsp
- * @return {{cmd0, cmd1, data, success, status}|Boolean}
+ * @return {{cmd0, cmd1, data, status}}
  */
 function parseSrsp (srsp) {
   expect(srsp).to.be.an.instanceOf(Buffer);
   const result = _parseFrame(srsp);
-  if (!result) { return false; }
   const { cmd0, cmd1, data } = result;
   const status = data.readUInt8(0);
-  const re = { cmd0, cmd1, data };
+  const re = { cmd0, cmd1, data, status: '' };
   switch (status) {
     case 0:
-      return Object.assign({}, re, {success: true, status: 'SUCCESS'});
+      re.status = 'SUCCESS'; break;
     case 1:
-      return Object.assign({}, re, {success: false, status: 'FAILURE'});
-    default:
-      return Object.assign({}, re, {success: false, status: '未定义'});
+      re.status = 'FAILURE'; break;
   }
+  return re;
 }
 
 /**
@@ -435,6 +432,137 @@ function buf2Ieee(buf) {
   return re.join('-');
 }
 
+// ----------------------------------------------------------
+
+const cmdMap = new Map([
+  ['ZDO_SEC_DEVICE_REMOVE', '0.0'],
+  ['ZDO_END_DEVICE_ANNCE_IND', '69.193'], // 0x45 0xc1
+  ['APP_MSG', `${parseInt(0x29, 10)}.0`], // 0x29 0x00
+  ['APP_MSG_SRSP', `${parseInt(0x69, 10)}.0`], // 0x69 0x00
+  ['APP_MSG_FEEDBACK', `${parseInt(0x49, 10)}.0`], // 0x49 0x00
+]);
+
+/**
+ * @function
+ * @param {String} name
+ * @return {[Number, Number]}
+ */
+cmdMap.getCmdByName = function (name) {
+  const result = cmdMap.get(name);
+  if (!result) throw new Error(`${name} mt cmd 未注册`);
+  const { cmdStr0, cmdStr1 } = result.split('.');
+  const cmd0 = parseInt(cmdStr0, 10);
+  const cmd1 = parseInt(cmdStr1, 10);
+  return [cmd0, cmd1];
+};
+
+/**
+ * @function
+ * @param {Number} cmd0
+ * @param {Number} cmd1
+ * @return {String}
+ */
+cmdMap.getNameByCmd = function (cmd0, cmd1) {
+  const cmdStr = cmd0 + '.' + cmd1;
+  let name;
+  for (let [key, value] of cmdMap) {
+    if (value === cmdStr) {
+      name = key;
+      break;
+    }
+  }
+  if (!name) throw new Error(`${cmdStr} 无对应mt名称`);
+  return name;
+};
+
+/**
+ * @function
+ * @param {Number} x
+ * @return {boolean}
+ */
+cmdMap.checkAreq = function (x) {
+  switch (typeof x) {
+    case 'number':
+      return ((x & 0xf0) == 0x40);
+    default:
+      return false;
+  }
+};
+
+const builder = {
+  /**
+   * @param {String} ieee
+   * @return {Buffer}
+   */
+  ZDO_SEC_DEVICE_REMOVE({ieee}) {
+    throw new Error('TODO');
+    // return _genFrame(0, 0, Buffer.from([ieee]))
+  },
+  /**
+   * @param {Number} ep
+   * @param {Number} destNwk
+   * @param {Number} destEp
+   * @param {Number} clusterId
+   * @param {Buffer} msg
+   */
+  APP_MSG({ep, destNwk, destEp, clusterId, msg}) {
+    const msgLen = msg.length;
+    const data = new Buffer(7 + msgLen);
+    data.writeUInt8(ep, 0);
+    data.writeUInt16BE(destNwk, 1);
+    data.writeUInt8(destEp, 3);
+    data.writeUInt16BE(clusterId, 4);
+    data.writeUInt8(msgLen, 6);
+    msg.copy(data, 7);
+    const { cmd0, cmd1 } = cmdMap.getCmdByName('APP_MSG');
+    return _genFrame(cmd0, cmd1, data);
+  }
+};
+
+const parser = {
+  /**
+   * @param {Buffer} buf
+   * @return {{cmd0: Number, cmd1: Number, srcAddr: Number, nwkAddr: Number, ieeeAddr: String, capabilities: Number, type: String}}
+   */
+  ZDO_END_DEVICE_ANNCE_IND(buf) {
+    const { cmd0, cmd1, data } = _parseFrame(buf);
+    const srcAddr = data.readUInt16BE(0);
+    const nwkAddr = data.readUInt16BE(2);
+    const ieeeAddr = buf2Ieee(data.slice(4, 4+8));
+    const capabilities = data.readUInt8(12);
+    const type = !!(capabilities & 0x02) ? 'router' : 'endDevice';
+    return {
+      cmd0, cmd1,
+      srcAddr, nwkAddr, ieeeAddr, capabilities, type
+    }
+  },
+  /**
+   * @param {Buffer} buf
+   * @return {{cmd0, cmd1, data, status}}
+   */
+  APP_MSG_SRSP(buf) {
+    return parseSrsp(buf);
+  },
+  /**
+   * @param {Buffer} buf
+   * @return {{cmd0, cmd1, nwk: (Number|*), ep: (Number|*), clusterId: (Number|*), payload: Buffer}}
+   */
+  APP_MSG_FEEDBACK(buf) {
+    const { cmd0, cmd1, data } = _genFrame(buf);
+    const nwk = data.readUInt16BE(0);
+    const ep = data.readUInt8(2);
+    const clusterId = data.readUInt16BE(3);
+    const msgLen = data.readUInt8(5);
+    const payload = new Buffer(msgLen);
+    data.copy(payload, 0, 6);
+    return {
+      cmd0, cmd1,
+      nwk, ep, clusterId, payload
+    }
+  }
+};
+
+
 module.exports = {
   SOF,
   frameMap,
@@ -458,4 +586,8 @@ module.exports = {
   // app
   AppMsg,
   AppMsgFeedback,
+  // ----
+  cmdMap,
+  builder,
+  parser
 };

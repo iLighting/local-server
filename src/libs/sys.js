@@ -1,81 +1,86 @@
-const { EventEmitter } = require('events');
 const co = require('co');
-const { getModels } = require('../db');
-
-const models = getModels();
+const { EventEmitter } = require('events');
+const _ = require('lodash');
+const models = require('../db').getModels();
+const { sys:log } = require('../utils/log');
 
 /**
- * @fires change
+ * @fires change - 对象变化
+ * @fires flush - 冲刷缓存
  */
 class Sys extends EventEmitter {
-  constructor({models}) {
+  constructor() {
     super();
-    this._models = models;
-    this._cache = {};
-  }
-
-  * _currentStatus() {
-    const { SysStatus } = this._models;
-    const re = yield SysStatus.find().exec();
-    if (re.length == 0) {
-      throw new Error('SysStatus 未初始化')
-    }
-    return re[0]
+    this._isInit = false;
+    this._dbCache = {};
   }
 
   /**
-   * 初始化系统状态
-   * @param {Object} obj
-   * @return {Promise}
-   */
-  createStatus(obj) {
-    const self = this;
-    const { SysStatus } = this._models;
-    return co.wrap(function * () {
-      yield SysStatus.create(obj);
-      self._cache = obj;
-    })();
-  }
-
-  /**
-   * 设置系统状态
-   * @param {Object} obj
-   * @return {Promise}
+   * 初始化，应首先被调用
    * @public
+   * @param {Object} [props]
+   * @return {Promise}
    */
-  setStatus(obj) {
+  initIns(props) {
     const self = this;
+    if (self._isInit) throw new Error('重复initCache');
     return co.wrap(function * () {
-      const status = yield self._currentStatus();
-      yield status.update(obj).exec();
-      Object.assign(self._cache, obj);
-      /**
-       * @event change
-       */
-      self.emit('change', Object.assign({}, self._cache));
+      const { Sys } = models;
+      const defaultCache = {
+        status: {}
+      };
+      yield Sys.create(props || defaultCache);
+      self._dbCache = props || defaultCache;
+      self._isInit = true;
+      return self;
     })();
   }
 
   /**
-   * 获取系统状态
+   * 返回系统对象（深复制）
    * @return {Object}
    */
-  getStatus() {
-    return Object.assign({}, this._cache);
+  getSys() {
+    if (!this._isInit) throw new Error('未initIns');
+    return _.cloneDeep(this._dbCache);
+  }
+
+  /**
+   * 合并系统对象，返回深复制系统对象
+   * @param {Object} obj
+   * @return {Object}
+   */
+  mergeSys(obj) {
+    if (!this._isInit) throw new Error('未initIns');
+    Object.assign(this._dbCache, obj);
+    const sys = this.getSys();
+    log.trace('系统状态已改变\n', sys);
+    /**
+     * @event change
+     */
+    this.emit('change', sys);
+    return sys;
+  }
+
+  /**
+   * 冲刷缓存
+   * @return {Promise}
+   */
+  flush() {
+    if (!this._isInit) throw new Error('未initIns');
+    const self = this;
+    return co.wrap(function * () {
+      const { Sys } = models;
+      const [sys] = yield Sys.find().exec();
+      yield sys.update(self._dbCache).exec();
+      log.trace('系统状态缓存已冲刷');
+      /**
+       * @event flush
+       */
+      self.emit('flush', self.getSys());
+      return self;
+    })();
   }
 }
 
-let sysIns;
-
-module.exports = {
-  create() {
-    if (!sysIns) { sysIns = new Sys({models}) }
-    return sysIns;
-  },
-  getIns() {
-    if (!sysIns) {
-      throw new Error('sys 未初始化')
-    }
-    return sysIns;
-  }
-};
+module.exports = new Sys();

@@ -1,56 +1,46 @@
 const co = require('co');
-const { sys:log } = require('./utils/log');
+const { framework:log } = require('./utils/log');
 
-const mockDb = function * (db, models) {
-  // 清空数据库
-  // const { Device, App, StaticScene, StaticSceneItem } = models;
-  // yield Device.remove().exec();
-  // yield App.remove().exec();
-  // yield StaticScene.remove().exec();
-  // yield StaticSceneItem.remove().exec();
-  // const mockDate = require('./mock/db')();
-  // const { deviceJoin } = require('./libs/zigbee');
-  // yield mockDate.map(devReq => deviceJoin(devReq));
-  yield require('./mock/db2')(models);
-};
-
-function * createSysStatus() {
-  const { create } = require('./libs/sys');
-  const ins = create();
-  yield ins.createStatus({
-    mode: 'manual'
-  })
-}
 
 const launch = co.wrap(function * (config) {
   // 注入 config
   // global.__config = config;
+
   // 初始化数据库
-  const { init:initDb } = require('./db');
-  const { db, models } = yield initDb(config.db.path);
+  // ------------------------
+  const { db, models } = yield require('./db').init(config.db.path);
   // mock数据库
-  yield mockDb(db, models);
+  yield require('./mock/db2')(models);
   log.debug('mock数据库');
+
   // 初始化系统状态
-  yield createSysStatus();
-  // 初始化lib proxy
-  yield require('./libs/proxy').init({
-    bridgeEp: config.zigbee.bridgeEp,
-    appMsgCluster: config.zigbee.appMsgCluster
+  // ------------------------
+  const sys = yield require('./libs/sys').initIns({
+    status: {
+      mode: 'manual'
+    }
   });
+
+  // 监听系统状态变化
+  // -----------------------
+  const controller = require('./libs/controller');
+  sys.on('change', sysObj => {
+    const mode = sysObj.status.mode;
+    controller.switchMode(mode);
+  });
+
   // 初始化Server
+  // ------------------------
   const app = require('./app');
-  app.context.mount = {};
-  app.context.mount.db = db;
-  app.context.mount.models = models;
+  app.context.mount = {
+    db, models, sys, controller
+  };
   const server = require('http').createServer(app.callback());
-  // 初始化 socket.io
-  const io = require('socket.io')(server);
-  require('./socket')(io);
+
   // 启动
   server.listen(config.server.port);
-  log.mark('应用启动成功，端口号 %s', config.server.port);
-  return { db, models, app };
+  log.info('应用启动成功，端口号 %s', config.server.port);
+  return { db, models, sys, app };
 });
 
 

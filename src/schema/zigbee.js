@@ -1,4 +1,5 @@
 //noinspection JSUnresolvedVariable
+const co = require('co');
 const expect = require('chai').expect;
 const Schema = require('mongoose').Schema;
 
@@ -48,6 +49,30 @@ deviceSchema.pre('validate', function (next) {
 deviceSchema.query.byNwk = function(nwk) {
   return this.findOne({nwk});
 };
+deviceSchema.static('join2Obj', function (dbQuery={}, cb) {
+  const Device = this;
+  const App = this.model('App');
+  co(function * () {
+    const devs = yield Device
+      .find(dbQuery)
+      .exec();
+    let result = devs.map(dev => dev.toObject());
+    for(let i=0; i<result.length; i++) {
+      let apps = yield App
+        .find()
+        .where('device').equals(result[i].nwk)
+        .exec();
+      result[i].apps = apps.map(app => app.toObject());
+    }
+    return result;
+  })
+    .then(result => {
+      cb(null, result);
+    })
+    .catch(function (err) {
+      cb(err);
+    });
+});
 
 // app
 // ---------------------------------------

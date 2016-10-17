@@ -17,12 +17,12 @@ module.exports = function (serial) {
 
   // 模拟不停开关灯
   // setInterval(() => {
-  //   serial.put(frame(0x49, 0, [0,1, 8, 0xff,0, 2, 1,Math.random() > 0.5 ? 1 : 0]))
+  //   frameSerial.put(frame(0x49, 0, [0,1, 8, 0xff,0, 2, 1,Math.random() > 0.5 ? 1 : 0]))
   // }, 5000);
 
   // 模拟持续触发轻触开关
   // let transId = 0;
   // setInterval(() => {
-  //   serial.put(frame(0x49, 0, [0,1, 8, 0xff,0, 2, 0,transId++]))
+  //   frameSerial.put(frame(0x49, 0, [0,1, 8, 0xff,0, 2, 0,transId++]))
   // }, 5000);
 };
