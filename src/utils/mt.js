@@ -514,7 +514,7 @@ const builder = {
     data.writeUInt16BE(clusterId, 4);
     data.writeUInt8(msgLen, 6);
     msg.copy(data, 7);
-    const { cmd0, cmd1 } = cmdMap.getCmdByName('APP_MSG');
+    const [ cmd0, cmd1 ] = cmdMap.getCmdByName('APP_MSG');
     return _genFrame(cmd0, cmd1, data);
   }
 };

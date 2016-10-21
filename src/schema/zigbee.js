@@ -49,7 +49,7 @@ deviceSchema.pre('validate', function (next) {
 deviceSchema.query.byNwk = function(nwk) {
   return this.findOne({nwk});
 };
-deviceSchema.static('join2Obj', function (dbQuery={}, cb) {
+deviceSchema.static('joinApps', function (dbQuery={}, cb) {
   const Device = this;
   const App = this.model('App');
   co(function * () {

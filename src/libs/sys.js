@@ -26,11 +26,16 @@ class Sys extends EventEmitter {
     if (self._isInit) throw new Error('重复initCache');
     return co.wrap(function * () {
       const { Sys } = models;
+      // 默认初始状态
       const defaultCache = {
-        status: {}
+        status: {
+          mode: 'manual',
+          sceneId: ''
+        }
       };
-      yield Sys.create(props || defaultCache);
-      self._dbCache = props || defaultCache;
+      const finalCache = Object.assign({}, defaultCache, props);
+      yield Sys.create(finalCache);
+      self._dbCache = finalCache;
       self._isInit = true;
       return self;
     })();
@@ -52,14 +57,27 @@ class Sys extends EventEmitter {
    */
   mergeSys(obj) {
     if (!this._isInit) throw new Error('未initIns');
+    const oldSys = _.cloneDeep(this._dbCache);
     Object.assign(this._dbCache, obj);
-    const sys = this.getSys();
+    const sys = _.cloneDeep(this._dbCache);
     log.trace('系统状态已改变\n', sys);
     /**
      * @event change
      */
-    this.emit('change', sys);
+    this.emit('change', sys, oldSys);
     return sys;
+  }
+
+  /**
+   * 指定名字合并系统对象，返回深复制系统对象
+   * @param {String} name
+   * @param {Object} obj
+   * @return {Object}
+   */
+  mergeSysIn(name, obj) {
+    const sys = this.getSys();
+    Object.assign(sys[name], obj);
+    return this.mergeSys(sys);
   }
 
   /**

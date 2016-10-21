@@ -21,13 +21,8 @@ const launch = co.wrap(function * (config) {
     }
   });
 
-  // 监听系统状态变化
   // -----------------------
   const controller = require('./libs/controller');
-  sys.on('change', sysObj => {
-    const mode = sysObj.status.mode;
-    controller.switchMode(mode);
-  });
 
   // 初始化Server
   // ------------------------

@@ -4,7 +4,7 @@ const { app: log } = require('./utils/log');
 const app = koa();
 
 app.use(function * (next) {
-  log.debug(this.request.href);
+  log.debug(this.request.method, this.request.url);
   yield next;
 });
 
