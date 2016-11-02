@@ -22,7 +22,7 @@ module.exports = {
   client: log4js.getLogger('frameHandler'),
   msgTransfer: log4js.getLogger('msgTransfer'),
   proxy: log4js.getLogger('proxy'),
-  clientIo: log4js.getLogger('clientIo'),
+  socketIo: log4js.getLogger('socketIo'),
   staticScene: log4js.getLogger('staticScene'),
   zigbeeMediator: log4js.getLogger('zigbeeMediator'),
   controller: log4js.getLogger('controller'),

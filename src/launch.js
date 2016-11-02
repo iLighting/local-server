@@ -32,6 +32,10 @@ const launch = co.wrap(function * (config) {
   };
   const server = require('http').createServer(app.callback());
 
+  // 初始化 socket.io
+  const io = require('socket.io')(server);
+  require('./sio')(io);
+
   // 启动
   server.listen(config.server.port);
   log.info('应用启动成功，端口号 %s', config.server.port);
