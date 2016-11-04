@@ -15,7 +15,7 @@ function gen(type, payload) {
 }
 
 function handler(eventName, ...args) {
-  log.trace('下发事件', eventName);
+  log.trace('下发事件', eventName, '\n', args);
   switch (eventName) {
     case 'mediator/handle': {
       const [name, result] = args;

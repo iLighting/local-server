@@ -70,7 +70,7 @@ class StaticController extends StateControllerBase {
   setScene(sid) {
     return co.wrap(function * (self) {
       const { Device, StaticScene } = models;
-      const [[scene]] = mix.wrap2ReturnPromise(StaticScene.joinItems.bind(StaticScene))({
+      const [[scene]] = yield mix.wrap2ReturnPromise(StaticScene.joinItems.bind(StaticScene))({
         _id: sid
       });
       for(let i=0; i<scene.items.length; i++) {
@@ -131,7 +131,7 @@ class Controller extends EventEmitter {
   }
 
   setScene(sid) {
-    log.info(`setScene ${nwk}.${ep}\n`, payload);
+    log.info(`setScene ${sid}`);
     return this._targetIns.setScene(sid);
   }
 }

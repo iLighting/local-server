@@ -4,6 +4,14 @@ const _ = require('lodash');
 const models = require('../db').getModels();
 const { sys:log } = require('../utils/log');
 
+
+const defaultSys = {
+  status: {
+    mode: 'manual',
+    sceneId: ''
+  }
+};
+
 /**
  * @fires change - 对象变化
  * @fires flush - 冲刷缓存
@@ -26,14 +34,10 @@ class Sys extends EventEmitter {
     if (self._isInit) throw new Error('重复initCache');
     return co.wrap(function * () {
       const { Sys } = models;
-      // 默认初始状态
-      const defaultCache = {
-        status: {
-          mode: 'manual',
-          sceneId: ''
-        }
-      };
-      const finalCache = Object.assign({}, defaultCache, props);
+      const finalCache = _.cloneDeep(defaultSys);
+      Object.keys(defaultSys).forEach(name => {
+        if (props[name]) Object.assign(finalCache[name], props[name])
+      });
       yield Sys.create(finalCache);
       self._dbCache = finalCache;
       self._isInit = true;

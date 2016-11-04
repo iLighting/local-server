@@ -88,31 +88,6 @@ router
 // ====================================================================
 
 /**
- * 获取、修改场景id
- */
-router
-  .get('/staticScene/current', function * () {
-    const { sys } = this.mount;
-    try {
-      const { sceneId } = sys.getSys().status;
-      this.body = new Msg(sceneId);
-    } catch (e) {
-      log.error(e);
-      this.body = new Msg(null, e);
-    }
-  })
-  .put('/staticScene/current', function * () {
-    const { controller } = this.mount;
-    const sceneId = yield body.json(this);
-    try {
-      yield  controller.setScene(sceneId);
-    } catch (e) {
-      log.error(e);
-      this.body = new Msg(sceneId, e);
-    }
-  });
-
-/**
  * 获取所有场景、新增场景
  */
 router
@@ -185,7 +160,7 @@ router
  * 查看、修改mode
  */
 router
-  .get('/mode', function * () {
+  .get('/sys/mode', function * () {
     const { controller } = this.mount;
     try {
       const mode = controller.getMode();
@@ -195,7 +170,7 @@ router
       this.body = new Msg(null, e);
     }
   })
-  .put('/mode', function * () {
+  .put('/sys/mode', function * () {
     const { controller } = this.mount;
     const [mode] = yield body.json(this);
     try {
@@ -204,6 +179,31 @@ router
     } catch (e) {
       log.error(e);
       this.body = new Msg(null, e);
+    }
+  });
+/**
+ * 获取、修改场景id
+ */
+router
+  .get('/sys/sceneId', function * () {
+    const { sys } = this.mount;
+    try {
+      const { sceneId } = sys.getSys().status;
+      this.body = new Msg(sceneId);
+    } catch (e) {
+      log.error(e);
+      this.body = new Msg(null, e);
+    }
+  })
+  .put('/sys/sceneId', function * () {
+    const { controller } = this.mount;
+    const [sceneId] = yield body.json(this);
+    try {
+      yield  controller.setScene(sceneId);
+      this.body = new Msg(sceneId);
+    } catch (e) {
+      log.error(e);
+      this.body = new Msg(sceneId, e);
     }
   });
 
