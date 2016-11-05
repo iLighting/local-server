@@ -132,7 +132,7 @@ class Controller extends EventEmitter {
 
   setScene(sid) {
     log.info(`setScene ${sid}`);
-    return this._targetIns.setScene(sid);
+    return this._targetIns.setScene(sid).then(() => sys.mergeSysIn('status', {sceneId: sid}))
   }
 }
 

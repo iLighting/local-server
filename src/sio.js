@@ -7,7 +7,8 @@
 const { socketIo: log } = require('./utils/log');
 
 const eventNames = [
-  'mediator/handle'
+  'mediator/handle',
+  'sys/change'
 ];
 
 function gen(type, payload) {
@@ -15,21 +16,38 @@ function gen(type, payload) {
 }
 
 function handler(eventName, ...args) {
-  log.trace('下发事件', eventName, '\n', args);
+  log.trace('下发事件', eventName, this.id, '\n', args);
   switch (eventName) {
-    case 'mediator/handle': {
-      const [name, result] = args;
-      switch (name) {
-        case 'ZDO_END_DEVICE_ANNCE_IND':
-          this.emit('data', gen('device/join.success', result));
-          break;
-        case 'APP_MSG_FEEDBACK':
-          // 以device为粒度
-          this.emit('data', gen('device/change.success', result));
-          break;
+
+    // mediator 事件
+    case 'mediator/handle': 
+      {
+        const [name, result] = args;
+        switch (name) {
+          case 'ZDO_END_DEVICE_ANNCE_IND':
+            this.emit('data', gen('device/join.success', result));
+            break;
+          case 'APP_MSG_FEEDBACK':
+            // 以device为粒度
+            this.emit('data', gen('device/change.success', result));
+            break;
+        }
       }
       break;
-    }
+
+    // sys 事件
+    case 'sys/change':
+      {
+        const [sysObj, oldSysObj] = args;
+        if (sysObj.status.mode !== oldSysObj.status.mode) {
+          this.emit('data', gen('sys/modeChange.success', sysObj.status.mode))
+        }
+        if (sysObj.status.sceneId !== oldSysObj.status.sceneId) {
+          this.emit('data', gen('sys/sceneIdChange.success', sysObj.status.sceneId))
+        }
+      }
+      break;
+
     default:
       this.emit('data', gen(eventName, args));
   }
