@@ -1,16 +1,25 @@
+
+
 doctype html
 html
 head
   include inc/innerHead.pug
   title iLight
 body
+  nav
+    .nav-wrapper
+      a(href='/' class='brand-logo left') logo
+      ul.right
+        li 
+          a(href='/') 首页
+        li
+          a(href='/board') 面板
+        li
+          if userName
+            a(href='/auth/logout') 注销
+          else
+            a(href='/auth/login') 登录
   p Index
-  if userName
-    p 已作为 #{userName} 登录
-      a(href='/auth/logout') 退出
-  else
-    p
-      a(href='/auth/login') 登录
   include inc/bodyTail.pug
   
   

@@ -5,4 +5,5 @@ module.exports = function * (next) {
   } else {
     this.throw(403, '未登录')
   }
+  // yield next
 }

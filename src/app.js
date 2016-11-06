@@ -1,6 +1,7 @@
 const koa = require('koa');
 const path = require('path');
 const Pug = require('koa-pug')
+const send = require('koa-send');
 const { app: log } = require('./utils/log');
 
 const app = koa();
@@ -9,6 +10,23 @@ app.use(function * (next) {
   log.debug(this.request.method, this.request.url);
   yield next;
 });
+
+// use static
+// ====================================
+
+app.use(
+  function * (next) {
+    const urlPath = this.request.path;
+    if (urlPath.indexOf('/statics') === 0) {
+      yield send(this, urlPath, {
+        root: path.join(__dirname),
+        gzip: true
+      })
+    } else {
+      yield next
+    }
+  }
+)
 
 // use pug
 // ====================================
