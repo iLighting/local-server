@@ -7,6 +7,8 @@ const router = require('koa-router')();
 // router.use(require('./manualMode'));
 // router.use(require('./sceneMode'));
 
+router.use(require('./home'));
+router.use(require('./auth'));
 router.use(require('./api'));
 
 module.exports = router.routes();

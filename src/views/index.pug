@@ -1,0 +1,17 @@
+doctype html
+html
+head
+  include inc/innerHead.pug
+  title iLight
+body
+  p Index
+  if userName
+    p 已作为 #{userName} 登录
+      a(href='/auth/logout') 退出
+  else
+    p
+      a(href='/auth/login') 登录
+  include inc/bodyTail.pug
+  
+  
+  

@@ -1,0 +1,32 @@
+//- params:  authorised, authoriseFailure
+
+doctype html
+html
+  head
+    title 登录
+    include inc/innerHead.pug
+  body
+    div(class='row')
+      .col.s6.offset-s3
+        h1 用户登录
+      if !authorised
+        form(class='col s6 offset-s3' method='post')
+          div(class='row')
+            if authoriseFailure
+              .col.s12
+                .red-text 用户名或密码错误
+            div(class='input-field col s12')
+              label(for='name') 用户名
+              input(id='name' type='text' name='name' placeholder='ilight')
+            div(class='input-field col s12')
+              label(for='password') 密码
+              input(id='password' type='password' name='password' placeholder='2016')
+            div(class='input-field col s12')
+              button(class='btn' type='submit') 登录
+                i(class='material-icons right') send
+      else
+        .red-text 你已经登录
+        a(href='/') 返回首页
+  
+  include inc/bodyTail.pug
+  
