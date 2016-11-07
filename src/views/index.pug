@@ -1,14 +1,12 @@
-
-
 doctype html
 html
 head
   include inc/innerHead.pug
-  title iLight
+  title iLighting
 body
-  nav
+  nav.teal.lighten-2
     .nav-wrapper
-      a(href='/' class='brand-logo left') logo
+      a(href='/' class='brand-logo left') iLighting
       ul.right
         li 
           a(href='/') 首页
@@ -19,7 +17,8 @@ body
             a(href='/auth/logout') 注销
           else
             a(href='/auth/login') 登录
-  p Index
+  h1.center-align iLighting <br> 智能照明系统
+  include inc/footer.pug
   include inc/bodyTail.pug
   
   

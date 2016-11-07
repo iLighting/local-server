@@ -6,6 +6,19 @@ html
     title 登录
     include inc/innerHead.pug
   body
+    nav.teal.lighten-2
+      .nav-wrapper
+        a(href='/' class='brand-logo left') iLight
+        ul.right
+          li 
+            a(href='/') 首页
+          li
+            a(href='/board') 面板
+          li
+            if userName
+              a(href='/auth/logout') 注销
+            else
+              a(href='/auth/login') 登录
     div(class='row')
       .col.s6.offset-s3
         h1 用户登录
@@ -28,5 +41,6 @@ html
         .red-text 你已经登录
         a(href='/') 返回首页
   
+  include inc/footer
   include inc/bodyTail.pug
   
