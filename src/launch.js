@@ -4,7 +4,7 @@ const { framework:log } = require('./utils/log');
 
 const launch = co.wrap(function * (config) {
   // 注入 config
-  // global.__config = config;
+  global.__config = config;
 
   // 初始化数据库
   // ------------------------

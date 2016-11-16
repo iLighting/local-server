@@ -4,6 +4,7 @@ const { shiftFrameFromBuf } = require('../utils/mt');
 
 /**
  * @fires data
+ * @fires error
  */
 class FrameSerial extends Writable {
   constructor({serial}) {
@@ -11,10 +12,19 @@ class FrameSerial extends Writable {
     this._tempChunk = null;
     this._serial = serial;
     this._cache = new Buffer(0);
+    // 开启串口
+    this._serial.open();
     // 绑定
-    this._serial.on('data', this._handleSerial.bind(this));
+    this._serial.on('error', this._handleSerialError.bind(this));
+    this._serial.on('data', this._handleSerialData.bind(this));
   }
-  _handleSerial(chunk) {
+
+  _handleSerialError(err) {
+    log.error(`串口出错 ${err}\n`, err);
+    this.emit('error', err);
+  }
+
+  _handleSerialData(chunk) {
     this._cache = Buffer.concat([this._cache, chunk]);
     let frameBuf = new Buffer(0);
     let restBuf = this._cache;
@@ -31,6 +41,7 @@ class FrameSerial extends Writable {
     // 剩余长度不足
     this._cache = restBuf;
   }
+
   _write(chunk, encoding, callback) {
     this._serial.write(chunk, err => {
       if (err) { callback(err) } else {
@@ -43,8 +54,9 @@ class FrameSerial extends Writable {
       }
     })
   }
+
 }
 
 module.exports = new FrameSerial({
-  serial: require('./hardware/serial')
+  serial: process.env.MOCK === 'true' ? require('./hardware/serialMock') : require('./hardware/serial')
 });

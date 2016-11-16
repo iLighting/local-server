@@ -5,47 +5,23 @@
 
 const co = require('co');
 const { Writable } = require('stream');
+const SerialPort = require('serialport');
 const { serial: log } = require('../../utils/log');
 
+const serialConfig = global.__config.serial;
 
-class SerialMock extends Writable {
-  constructor(props) {
-    super(props);
-    this._cache = [];
-  }
+const serial =  new SerialPort(serialConfig.path, {
+  baudRate: serialConfig.rate,
+  dataBits: 8,
+  stopBits: 1,
+  parity: 'none',
+  rtscts: false,
+  autoOpen: false
+});
 
-  /**
-   * @param chunk
-   * @param encoding
-   * @param callback
-   * @private
-   */
-  _write(chunk, encoding, callback) {
-    this._cache.push(chunk);
-    callback();
-  }
-  /**
-   * @param {Buffer} buf
-   * @private
-   */
-  _feedback(buf) {
-    log.trace('receive', buf);
-    this.emit('data', buf);
-  }
-  drain(callback) {
-    callback(null);
-    this._cache.forEach(chunk => this.emit('chunk', chunk));
-    this._cache = [];
-  }
-  put(buf) {
-    this._feedback(buf);
-  }
-}
-
-const serial = new SerialMock();
-
-// mock
-const mock = require('../../mock/serial');
-mock(serial);
+serial
+  .on('data', data => log.trace('receive:', data))
+  .on('error', err => log.error(err))
+  .on('open', () => log.info('open successfully'))
 
 module.exports = serial;

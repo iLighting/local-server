@@ -11,20 +11,27 @@ const frameSerial = require('./frameSerial');
  * @fires areq - 收到areq
  * @fires srspParsed - srsp解析完成
  * @fires areqParsed - areq解析完成
+ * @fires error
  */
 class Zigbee extends EventEmitter {
   constructor({serial}) {
     super();
     this._serial = serial;
     // bind
-    this._serial.on('data', this._handleFrame.bind(this));
+    this._serial.on('error', this._handleFrameError.bind(this));
+    this._serial.on('data', this._handleFrameData.bind(this));
+  }
+
+  _handleFrameError(err) {
+    log.error(`frameSerial出错 ${err}\n`, err);
+    this.emit(err);
   }
 
   /**
    * @param {Buffer} buf
    * @private
    */
-  _handleFrame(buf) {
+  _handleFrameData(buf) {
     const { cmd0, cmd1 } = parseFrame(buf);
     let isAreqFlag = cmdMap.checkAreq(cmd0);
     /**

@@ -8,5 +8,9 @@ module.exports = {
   zigbee: {
     bridgeEp: 8,
     appMsgCluster: 0xff00,
+  },
+  serial: {
+    path: 'COM3',
+    rate: 115200,
   }
 };

@@ -34,11 +34,11 @@ app.use(
 // TODO: 加入生产模式控制
 const pug = new Pug({
   viewPath: path.join(__dirname, 'views'),
-  debug: true,
+  debug: !(process.env.NODE_ENV === 'prod'),
   pretty: false,
-  compileDebug: true,
+  compileDebug: !(process.env.NODE_ENV === 'prod'),
   locals: {},
-  noCache: true,
+  noCache: process.env.NODE_ENV === 'prod',
   // basedir: 'path/for/pug/extends',
   // helperPath: [
   //   'path/to/pug/helpers',

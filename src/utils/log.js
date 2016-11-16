@@ -25,5 +25,6 @@ module.exports = {
   socketIo: log4js.getLogger('socketIo'),
   staticScene: log4js.getLogger('staticScene'),
   zigbeeMediator: log4js.getLogger('zigbeeMediator'),
+  zigbee: log4js.getLogger('zigbee'),  
   controller: log4js.getLogger('controller'),
 };
