@@ -39,13 +39,21 @@ class Zigbee extends EventEmitter {
      * @event srsp
      */
     this.emit(isAreqFlag ? 'areq' : 'srsp', buf);
-    const name = cmdMap.getNameByCmd(cmd0, cmd1);
-    const result = parser[name](buf);
-    /**
-     * @event areqParsed
-     * @event srspParsed
-     */
-    this.emit(isAreqFlag ? 'areqParsed' : 'srspParsed', name, result);
+    try {
+      const name = cmdMap.getNameByCmd(cmd0, cmd1);
+      const result = parser[name](buf);
+      /**
+       * @event areqParsed
+       * @event srspParsed
+       */
+      this.emit(isAreqFlag ? 'areqParsed' : 'srspParsed', name, result);
+    } catch (e) {
+      log.error(e);
+      /**
+       * @event error
+       */
+      // this.emit('error', e);
+    }
   }
 
   /**

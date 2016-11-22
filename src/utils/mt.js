@@ -435,8 +435,12 @@ function buf2Ieee(buf) {
 // ----------------------------------------------------------
 
 const cmdMap = new Map([
+  // sys
+  ['SYS_PING', `${parseInt(0x21, 10)}.1`], // 0x21 0x01
+  // zdo
   ['ZDO_SEC_DEVICE_REMOVE', '0.0'],
   ['ZDO_END_DEVICE_ANNCE_IND', '69.193'], // 0x45 0xc1
+  // app
   ['APP_MSG', `${parseInt(0x29, 10)}.0`], // 0x29 0x00
   ['APP_MSG_SRSP', `${parseInt(0x69, 10)}.0`], // 0x69 0x00
   ['APP_MSG_FEEDBACK', `${parseInt(0x49, 10)}.0`], // 0x49 0x00
@@ -490,11 +494,21 @@ cmdMap.checkAreq = function (x) {
 };
 
 const builder = {
+  // sys
+  // =================================================
+  SYS_PING() {
+    const [ cmd0, cmd1 ] = cmdMap.getCmdByName('SYS_PING');
+    return _genFrame(cmd0, cmd1);
+  },
+
+  // zdo
+  // =================================================
   /**
    * @param {String} ieee
    * @return {Buffer}
    */
   ZDO_SEC_DEVICE_REMOVE({ieee}) {
+    // TODO: ZDO_SEC_DEVICE_REMOVE
     throw new Error('TODO');
     // return _genFrame(0, 0, Buffer.from([ieee]))
   },
@@ -520,6 +534,19 @@ const builder = {
 };
 
 const parser = {
+  // sys
+  // =================================================
+  SYS_PING_SRSP(buf) {
+    const { cmd0, cmd1, data } = _parseFrame(buf);
+    const capabilities = data.readUInt16BE(0);
+    return {
+      cmd0, cmd1,
+      capabilities
+    }
+  },
+
+  // zdo
+  // =================================================
   /**
    * @param {Buffer} buf
    * @return {{cmd0: Number, cmd1: Number, srcAddr: Number, nwkAddr: Number, ieeeAddr: String, capabilities: Number, type: String}}
@@ -536,6 +563,9 @@ const parser = {
       srcAddr, nwkAddr, ieeeAddr, capabilities, type
     }
   },
+
+  // app
+  // ================================================
   /**
    * @param {Buffer} buf
    * @return {{cmd0, cmd1, data, status}}

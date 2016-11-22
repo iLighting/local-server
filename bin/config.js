@@ -10,7 +10,7 @@ module.exports = {
     appMsgCluster: 0xff00,
   },
   serial: {
-    path: 'COM3',
-    rate: 115200,
+    path: 'COM4',
+    rate: 38400,
   }
 };
