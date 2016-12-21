@@ -1,39 +1,49 @@
 const { EventEmitter } = require('events');
+const _ = require('lodash');
 const co = require('co');
 const models = require('../db').getModels();
 const zm = require('./zigbee');
 const sys = require('./sys');
 const mix = require('../utils/mix');
+const appMsg = require('../utils/appMsg');
 const { controller: log } = require('../utils/log');
 
 
 /**
 * 设置远端app负载，同步数据库，收到srsp后resolve
-* @param nwk
-* @param ep
-* @param payload
+* @param {Number} nwk
+* @param {Number} ep
+* @param {*} payload
 * @return {Promise} - app.toObject()
 */
 function sendAppMsg(nwk, ep, payload) {
-  // TODO: deal with `payload.msg`
   return co.wrap(function * () {
-    yield zm.write('APP_MSG', {
-      ep: 8,
-      destNwk: nwk,
-      destEp: ep,
-      clusterId: 0xff00,
-      msg: Buffer.from([0])
-    });
-
-    // 同步数据库
     const { App } = models;
-    const finalApp = yield App.findOneAndUpdate(
-      {device: nwk, endPoint: ep},
-      { payload },
-      { 'new': true }
-    ).exec();
-
-    return finalApp.toObject();
+    // 查找app类型
+    const tapp = yield App.findOne({device: nwk, endPoint: ep}).exec();
+    if (!tapp) throw new Error(`设备${nwk}.${ep}不存在`);
+    // build msg
+    if (appMsg[tapp.type]) {
+      const msg = appMsg[tapp.type].build(payload);
+      if (msg) {
+        yield zm.write('APP_MSG', {
+          ep: 8,
+          destNwk: nwk,
+          destEp: ep,
+          clusterId: 0xff00,
+          msg: msg
+        });
+        // 同步数据库
+        const finalApp = yield App.findOneAndUpdate(
+          {device: nwk, endPoint: ep},
+          { payload },
+          { 'new': true }
+        ).exec();
+        return finalApp.toObject();        
+      }
+    } else {
+      log.warn(`未定义appMsg['${tapp.type}']，消息未发送`)
+    }
   })();
 }
 

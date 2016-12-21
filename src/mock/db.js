@@ -35,7 +35,7 @@ const devDesc = [
       endPoint: 8,
       type: 'gray-lamp',
       name: '灯具3',
-      payload: {level: 100}
+      payload: {level: 50}
     }]
   },
   {

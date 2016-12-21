@@ -1,17 +1,29 @@
 
-lamp = {
+/**
+ * 检查对象是否匹配keyList
+ * 
+ * @param {Object} m
+ * @param {Array} keyList
+ * @return {Boolean}
+ */
+function objContain(m, keyList) {
+  let i;
+  let len = keyList.length;
+  for(i=0; i<len; i++) {
+    if (!m.hasOwnProperty(keyList[i])) return false
+  }
+  return true;
+}
+
+const lamp = {
   /**
    * 构建lamp app msg
-   * @param {String} cmd - 'turn'
    * @param {*} payload
-   * @return {Buffer}
+   * @return {Buffer|None}
    */
-  build(cmd, payload) {
-    switch (cmd) {
-      case 'turn':
-        return Buffer.from([0, payload ? 1 : 0]);
-      default:
-        return new Buffer(0);
+  build(payload) {
+    if (objContain(payload, ['on'])) {
+      return Buffer.from([0, payload.on ? 1:0]);      
     }
   },
   /**
@@ -29,13 +41,45 @@ lamp = {
       case 1:
         return ['turnFeedback', {on: !!buf.readUInt8(1)}];
       default:
-        return [];
+        return ['unknow', cmdId]
     }
   }
 };
 Object.freeze(lamp);
 
-pulse = {
+const grayLamp = {
+  /**
+   * 构建gray lamp app msg
+   * @param {*} payload
+   * @return {Buffer|None}
+   */
+  build(payload) {
+    if (objContain(payload, ['level'])) {
+      return Buffer.from([0, payload.level]);      
+    }
+  },
+  /**
+   * 解析gray lamp app msg
+   * @param {Buffer} buf
+   * @return {Array}
+   */
+  parse(buf) {
+    const cmdId = buf.readUInt8(0);
+    switch (cmdId) {
+      // change
+      case 0:
+        return ['change', {level: buf.readUInt8(1)}];
+      // change feedback
+      case 1:
+        return ['changeFeedback', {level: buf.readUInt8(1)}];
+      default:
+        return ['unknow', cmdId];
+    }
+  }
+};
+Object.freeze(grayLamp);
+
+const pulse = {
   parse(buf) {
     const cmdId = buf.readUInt8(0);
     switch (cmdId) {
@@ -51,5 +95,6 @@ Object.freeze(pulse);
 
 module.exports = {
   lamp,
+  'gray-lamp': grayLamp,
   pulse,
 };
