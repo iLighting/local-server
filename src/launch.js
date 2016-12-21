@@ -10,7 +10,7 @@ const launch = co.wrap(function * (config) {
   // ------------------------
   const { db, models } = yield require('./db').init(config.db.path);
   // mock数据库
-  yield require('./mock/db2')(models);
+  yield require('./mock/db')(models);
   log.debug('mock数据库');
 
   // 初始化系统状态
