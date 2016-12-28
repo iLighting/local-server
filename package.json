@@ -7,6 +7,7 @@
     "dev": "cross-env NODE_ENV=dev nodemon --watch ./src --watch ./bin ./bin/server.js",
     "mock": "cross-env NODE_ENV=dev MOCK=true nodemon --watch ./src --watch ./bin ./bin/server.js",
     "debug": "cross-env NODE_ENV=dev ./node_modules/.bin/node-debug ./bin/server.js",
+    "debug-mock": "cross-env NODE_ENV=dev MOCK=true ./node_modules/.bin/node-debug ./bin/server.js",
     "doc": "./node_modules/.bin/jsdoc -c jsdoc.conf.json",
     "test": "mocha --recursive test/"
   },

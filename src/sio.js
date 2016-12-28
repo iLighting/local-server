@@ -25,6 +25,7 @@ function handler(eventName, ...args) {
         const [name, result] = args;
         switch (name) {
           case 'ZDO_END_DEVICE_ANNCE_IND':
+          case 'ZDO_SIMPLE_DESC_RSP':
             this.emit('data', gen('device/join.success', result));
             break;
           case 'APP_MSG_FEEDBACK':

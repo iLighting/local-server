@@ -17,7 +17,7 @@ class SerialMock extends Writable {
   open() {}
 
   /**
-   * @param chunk
+   * @param {Buffer} chunk
    * @param encoding
    * @param callback
    * @private

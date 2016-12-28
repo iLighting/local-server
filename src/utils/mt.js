@@ -160,242 +160,6 @@ function shiftFrameFromBuf(buf) {
 }
 
 /**
- * 注册AREQ类
- * @param {Frame} cls
- */
-function registerFrame(cls) {
-  const { cmd0, cmd1 } = cls;
-  if (_.isUndefined(cmd0) || _.isUndefined(cmd1)) {
-    throw new Error(`${cls.name}命令字未定义`)
-  }
-  const key = [cmd0, cmd1].toString();
-  frameMap.set(key, cls);
-  return cls;
-}
-
-/**
- * @typedef {FrameBase} Frame
- */
-class FrameBase {
-  get cmd0() { return this.constructor.cmd0; }
-  get cmd1() { return this.constructor.cmd1; }
-  get name() { return this.constructor.name; }
-}
-
-/**
- * @typedef {FrameSreq} FrameSreq
- */
-class FrameSreq extends FrameBase {
-  /**
-   * 获取指令帧buffer
-   * @param {Buffer} [data]
-   * @return {Buffer}
-   */
-  dump(data) {
-    const { cmd0, cmd1 } = this.constructor;
-    return _genFrame(cmd0, cmd1, data);
-  }
-  /**
-   * 检查是否为对应srsp
-   * @param {Buffer} frame
-   * @return {Object|false}
-   * @see parseSrsp
-   */
-  isSRSP(frame) {
-    const result = parseSrsp(frame);
-    if (!result) return false;
-    const { cmd0, cmd1 } = result;
-    const { srspCmd0, srspCmd1 } = this;
-    if (cmd0 == srspCmd0 && cmd1 == srspCmd1) {
-      return result;
-    }
-  }
-  static parseSRSP(frame) { throw new Error('未实现') }
-  get srspCmd0() { return this.constructor.srspCmd0; }
-  get srspCmd1() { return this.constructor.srspCmd1; }
-}
-Object.defineProperties(FrameSreq, {
-  type: { value: 'SREQ', writable: false, configurable: false, enumerable: true }
-});
-
-/**
- * @typedef {FrameAreq} FrameAreq
- */
-class FrameAreq extends FrameBase {
-  constructor(origin) {
-    super();
-    /**
-     * @member origin
-     */
-    this.origin = origin;
-  }
-  /**
-   * 预处理原始指令帧
-   * @private
-   * @param {Buffer} buf
-   * @return {Object}
-   * @throws {Error} - 解析失败
-   * @throws {Error} - 命令字不匹配
-   * @see _parseFrame
-   */
-  preParse(buf) {
-    const parsed = _parseFrame(buf);
-    if (!parsed) {
-      throw new Error(`${this.name}解析失败`);
-    }
-    const { cmd0, cmd1 } = this;
-    if (parsed.cmd0 != cmd0 || parsed.cmd1 != cmd1) {
-      throw new Error(`${this.name}命令字不匹配`);
-    }
-    return parsed;
-  }
-  /**
-   * @private
-   * @param {Object} desc
-   */
-  genParsedValue(desc) {
-    let re = {};
-    let nd = {};
-    Object.keys(desc).forEach(name => {
-      nd[name] = {value: desc[name], writable: false, enumerable: true, configurable: false};
-    });
-    Object.defineProperties(re, nd);
-    return re;
-  }
-}
-Object.defineProperties(FrameAreq, {
-  type: { value: 'AREQ', writable: false, configurable: false, enumerable: true }
-});
-
-/**
- * @typedef {SysPing} SysPing
- */
-class SysPing extends FrameSreq {
-  dump() { return super.dump(); }
-}
-SysPing.cmd0 = 0x21;
-SysPing.cmd1 = 0x01;
-SysPing.srspCmd0 = 0x61;
-SysPing.srspCmd1 = 0x01;
-registerFrame(SysPing);
-
-// ZDO
-// -------------------------------------------------------------
-
-/**
- * @typedef {ZdoSecDeviceRemove} ZdoSecDeviceRemove
- */
-class ZdoSecDeviceRemove extends FrameSreq {
-  /**
-   * @param {Number} ieee
-   */
-  constructor(ieee) {
-    super(ieee);
-    this.ieee = ieee;
-  }
-  dump() { return super.dump(Buffer.from([this.ieee])); }
-}
-
-/**
- * @typedef {ZdoEndDeviceAnnceInd} ZdoEndDeviceAnnceInd
- */
-class ZdoEndDeviceAnnceInd extends FrameAreq {
-  constructor(origin) {
-    super(origin);
-    const { data } = this.preParse(origin);
-    const srcAddr = data.readUInt16BE(0);
-    const nwkAddr = data.readUInt16BE(2);
-    const ieeeAddr = buf2Ieee(data.slice(4, 4+8));
-    const capabilities = data.readUInt8(12);
-    const type = !!(capabilities & 0x02) ? 'router' : 'endDevice';
-    /**
-     * @member parsed
-     */
-    this.parsed = this.genParsedValue({
-      'SrcAddr': srcAddr,
-      'NwkAddr': nwkAddr,
-      'IEEEAddr': ieeeAddr,
-      'Capabilities': capabilities,
-      'DeviceType': type,
-    });
-  }
-}
-Object.defineProperties(ZdoEndDeviceAnnceInd, {
-  cmd0: { value: 0x45, writable: false, configurable: false, enumerable: true },
-  cmd1: { value: 0xc1, writable: false, configurable: false, enumerable: true },
-});
-registerFrame(ZdoEndDeviceAnnceInd);
-
-// APP
-// -------------------------------------------------------------
-
-/**
- * @typedef {MsgTransfer} MsgTransfer
- */
-class AppMsg extends FrameSreq {
-  /**
-   * @param {Number} ep
-   * @param {Number} destNwk
-   * @param {Number} destEp
-   * @param {Number} clusterId
-   * @param {Buffer} msg
-   */
-  constructor(ep, destNwk, destEp, clusterId, msg) {
-    super();
-    Object.assign(this, {
-      ep, destNwk, destEp, clusterId, msg
-    });
-  }
-  dump() {
-    const { ep, destNwk, destEp, clusterId, msg } = this;
-    const msgLen = msg.length;
-    const data = new Buffer(7 + msgLen);
-    data.writeUInt8(ep, 0);
-    data.writeUInt16BE(destNwk, 1);
-    data.writeUInt8(destEp, 3);
-    data.writeUInt16BE(clusterId, 4);
-    data.writeUInt8(msgLen, 6);
-    msg.copy(data, 7);
-    return _genFrame(0x29, 0x00, data);
-  }
-}
-Object.defineProperties(AppMsg, {
-  cmd0: { value: 0x29, writable: false, configurable: false, enumerable: true },
-  cmd1: { value: 0x00, writable: false, configurable: false, enumerable: true },
-  srspCmd0: { value: 0x69, writable: false, configurable: false, enumerable: true },
-  srspCmd1: { value: 0x00, writable: false, configurable: false, enumerable: true },
-});
-registerFrame(AppMsg);
-
-/**
- * @typedef {AppMsgFeedback} AppMsgFeedback
- */
-class AppMsgFeedback extends FrameAreq {
-  constructor(buf) {
-    super(buf);
-    const { data } = this.preParse(buf);
-    const remoteNwk = data.readUInt16BE(0);
-    const remoteEp = data.readUInt8(2);
-    const clusterId = data.readUInt16BE(3);
-    const msgLen = data.readUInt8(5);
-    const payload = new Buffer(msgLen);
-    data.copy(payload, 0, 6);
-    // inject
-    this.parsed = this.genParsedValue({
-      'RemoteNwk': remoteNwk,
-      'RemoteEp': remoteEp,
-      'ClusterId': clusterId,
-      'RemotePayload': payload
-    });
-  }
-}
-Object.defineProperties(AppMsgFeedback, {
-  cmd0: { value: 0x49, writable: false, configurable: false, enumerable: true },
-  cmd1: { value: 0x00, writable: false, configurable: false, enumerable: true },
-});
-registerFrame(AppMsgFeedback);
-
-/**
  * @param {*} x
  * @return {boolean}
  */
@@ -434,12 +198,26 @@ function buf2Ieee(buf) {
 
 // ----------------------------------------------------------
 
+/**
+ * 为cmdMap生成cmd标志
+ * @param {Number} cmd0
+ * @param {Number} cmd1
+ * @return {String}
+ */
+function cmd2str(cmd0, cmd1) {
+  return `${parseInt(cmd0, 10)}.${parseInt(cmd1, 10)}`
+}
+
 const cmdMap = new Map([
   // sys
   ['SYS_PING', `${parseInt(0x21, 10)}.1`], // 0x21 0x01
   // zdo
   ['ZDO_SEC_DEVICE_REMOVE', '0.0'],
   ['ZDO_END_DEVICE_ANNCE_IND', '69.193'], // 0x45 0xc1
+  ['ZDO_ACTIVE_EP_REQ', cmd2str(0x25, 0x05)],
+  ['ZDO_ACTIVE_EP_RSP', cmd2str(0x45, 0x85)],
+  ['ZDO_SIMPLE_DESC_REQ', cmd2str(0x25, 0x04)],
+  ['ZDO_SIMPLE_DESC_RSP', cmd2str(0x45, 0x84)],  
   // app
   ['APP_MSG', `${parseInt(0x29, 10)}.0`], // 0x29 0x00
   ['APP_MSG_SRSP', `${parseInt(0x69, 10)}.0`], // 0x69 0x00
@@ -454,7 +232,7 @@ const cmdMap = new Map([
 cmdMap.getCmdByName = function (name) {
   const result = cmdMap.get(name);
   if (!result) throw new Error(`${name} mt cmd 未注册`);
-  const { cmdStr0, cmdStr1 } = result.split('.');
+  const [ cmdStr0, cmdStr1 ] = result.split('.');
   const cmd0 = parseInt(cmdStr0, 10);
   const cmd1 = parseInt(cmdStr1, 10);
   return [cmd0, cmd1];
@@ -512,6 +290,34 @@ const builder = {
     throw new Error('TODO');
     // return _genFrame(0, 0, Buffer.from([ieee]))
   },
+
+  /**
+   * ZDO_ACTIVE_EP_REQ
+   * 
+   * @param {Number} nwk
+   * @return {Buffer}
+   */
+  ZDO_ACTIVE_EP_REQ(nwk) {
+    const data = Buffer.from([0,0,0,0]);
+    data.writeUInt16BE(nwk, 2);
+    const [cmd0, cmd1] = cmdMap.getCmdByName('ZDO_ACTIVE_EP_REQ');
+    return _genFrame(cmd0, cmd1, data);
+  },
+  /**
+   * ZDO_SIMPLE_DESC_REQ
+   * 
+   * @param {Number} nwk
+   * @param {Number} ep
+   * @return {Buffer}
+   */
+  ZDO_SIMPLE_DESC_REQ({nwk, ep}) {
+    const data = new Buffer(5);
+    data.writeUInt16BE(0, 0);
+    data.writeUInt16BE(nwk, 2);
+    data.writeUInt8(ep, 4);
+    const [cmd0, cmd1] = cmdMap.getCmdByName('ZDO_SIMPLE_DESC_REQ');
+    return _genFrame(cmd0, cmd1, data);
+  },
   /**
    * @param {Number} ep
    * @param {Number} destNwk
@@ -563,6 +369,45 @@ const parser = {
       srcAddr, nwkAddr, ieeeAddr, capabilities, type
     }
   },
+  /**
+   * ZDO_ACTIVE_EP_RSP
+   * 
+   * @param {any} buf
+   * @return {Object}
+   */
+  ZDO_ACTIVE_EP_RSP(buf) {
+    const { cmd0, cmd1, data } = _parseFrame(buf);
+    const srcAddr = data.readUInt16BE(0);
+    const status = data.readUInt8(2);
+    const nwkAddr = data.readUInt16BE(3);
+    const activeEpCount = data.readUInt8(5);
+    const activeEpList = data.slice(6).toJSON().data;
+    return {
+      cmd0, cmd1,
+      srcAddr, status, nwkAddr, activeEpCount, activeEpList
+    }
+  },
+  /**
+   * ZDO_ACTIVE_EP_RSP
+   * 
+   * @param {any} buf
+   * @return {Object}
+   */
+  ZDO_SIMPLE_DESC_RSP(buf) {
+    const { cmd0, cmd1, data } = _parseFrame(buf);
+    const srcAddr = data.readUInt16BE(0);
+    const status = data.readUInt8(2);
+    const nwkAddr = data.readUInt16BE(3);
+    const len = data.readUInt8(5);
+    const endPoint = data.readUInt8(6);
+    const profileId = data.readUInt16BE(7);
+    const deviceId = data.readUInt16BE(9);
+    const deviceVer = data.readUInt8(11);
+    return {
+      cmd0, cmd1,
+      srcAddr, status, nwkAddr, len, endPoint, profileId, deviceId, deviceVer
+    };
+  },
 
   // app
   // ================================================
@@ -604,18 +449,6 @@ module.exports = {
   isAreq,
   shiftFrameFromBuf,
   buf2Ieee,
-  // frame base
-  FrameBase,
-  FrameSreq,
-  FrameAreq,
-  // sys
-  SysPing,
-  // zdo
-  ZdoSecDeviceRemove,
-  ZdoEndDeviceAnnceInd,
-  // app
-  AppMsg,
-  AppMsgFeedback,
   // ----
   cmdMap,
   builder,

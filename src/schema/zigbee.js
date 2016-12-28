@@ -88,6 +88,7 @@ const appSchema = new Schema({
     $type: String,
     required: true,
     enum: [
+      'unknow',
       // lamp
       'lamp',
       'gray-lamp',
@@ -144,6 +145,11 @@ appSchema.pre('validate', function(next) {
   else if (type=='pulse') {
     try {
       expect(payload).to.have.property('transId').that.is.a('number')
+    } catch (e) { next(e) }
+  }
+  else if (type=='light-sensor') {
+    try {
+      expect(payload).to.have.property('level').that.is.a('number')
     } catch (e) { next(e) }
   }
   next();

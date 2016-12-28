@@ -72,7 +72,7 @@ router
       // 非manual模式，忽略payload
       delete updateReq.payload;
       const app = yield App.findOneAndUpdate(
-        {device: nwk},
+        {device: nwk, endPoint: ep},
         updateReq,
         { 'new': true }).exec();
       this.body = new Msg(_.pick(app, [

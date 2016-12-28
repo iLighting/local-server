@@ -61,7 +61,7 @@ class Zigbee extends EventEmitter {
    * 已被zigbeeMediator代理，不要直接使用此函数发数据
    * @public
    * @param {String} name
-   * @param {Object} props
+   * @param {*} props
    * @return {Promise}
    */
   write(name, props) {
