@@ -8,10 +8,10 @@ const { Writable } = require('stream');
 const SerialPort = require('serialport');
 const { serial: log } = require('../../utils/log');
 
-const serialConfig = global.__config.serial;
+const config = global.__config;
 
-const serial =  new SerialPort(serialConfig.path, {
-  baudRate: serialConfig.rate,
+const serial =  new SerialPort(config['serial/path'], {
+  baudRate: config['serial/rate'],
   dataBits: 8,
   stopBits: 1,
   parity: 'none',

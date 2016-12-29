@@ -8,7 +8,7 @@ const launch = co.wrap(function * (config) {
 
   // 初始化数据库
   // ------------------------
-  const { db, models } = yield require('./db').init(config.db.path);
+  const { db, models } = yield require('./db').init(config['db/path']);
   // mock数据库
   yield require('./mock/db')(models);
   log.debug('mock数据库');
@@ -37,8 +37,8 @@ const launch = co.wrap(function * (config) {
   require('./sio')(io);
 
   // 启动
-  server.listen(config.server.port);
-  log.info('应用启动成功，端口号 %s', config.server.port);
+  server.listen(config['server/port']);
+  log.info('应用启动成功，端口号 %s', config['server/port']);
   return { db, models, sys, app };
 });
 

@@ -8,6 +8,7 @@ const mix = require('../utils/mix');
 const appMsg = require('../utils/appMsg');
 const { controller: log } = require('../utils/log');
 
+const config = global.__config;
 
 /**
 * 设置远端app负载，同步数据库，收到srsp后resolve
@@ -27,10 +28,10 @@ function sendAppMsg(nwk, ep, payload) {
       const msg = appMsg[tapp.type].build(payload);
       if (msg) {
         yield zm.write('APP_MSG', {
-          ep: 8,
+          ep: config['zigbee/bridgeEp'],
           destNwk: nwk,
           destEp: ep,
-          clusterId: 0xff00,
+          clusterId: config['zigbee/appMsgCluster'],
           msg: msg
         });
         // 同步数据库

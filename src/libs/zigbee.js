@@ -113,17 +113,17 @@ class Mediator extends Writable {
               let type;
               let payload;
               switch (deviceId) {
-                case config['hd/appType/lamp']:
+                case config['zigbee/appType/lamp']:
                   type = 'lamp'; payload = {on: false}; break;
-                case config['hd/appType/gray-lamp']:
+                case config['zigbee/appType/gray-lamp']:
                   type = 'gray-lamp'; payload = {level: 0}; break;
-                case config['hd/appType/switch']:
+                case config['zigbee/appType/switch']:
                   type = 'switch'; payload = {on: false}; break;
-                case config['hd/appType/gray-switch']:
+                case config['zigbee/appType/gray-switch']:
                   type = 'gray-switch'; payload = {level: 0}; break;
-                case config['hd/appType/pulse']:
+                case config['zigbee/appType/pulse']:
                   type = 'pulse'; payload = {transId: 0}; break;
-                case config['hd/appType/light-sensor']:
+                case config['zigbee/appType/light-sensor']:
                   type = 'light-sensor'; payload = {level: 0}; break;
               }
               yield app.update({
