@@ -119,11 +119,11 @@ class Mediator extends Writable {
                 case config['hd/appType/gray-lamp']:
                   type = 'gray-lamp'; payload = {level: 0}; break;
                 case config['hd/appType/switch']:
-                  type = 'switch'; payload = {}; break;
+                  type = 'switch'; payload = {on: false}; break;
                 case config['hd/appType/gray-switch']:
-                  type = 'gray-switch'; payload = {}; break;
+                  type = 'gray-switch'; payload = {level: 0}; break;
                 case config['hd/appType/pulse']:
-                  type = 'pulse'; payload = {}; break;
+                  type = 'pulse'; payload = {transId: 0}; break;
                 case config['hd/appType/light-sensor']:
                   type = 'light-sensor'; payload = {level: 0}; break;
               }

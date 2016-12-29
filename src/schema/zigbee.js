@@ -142,6 +142,12 @@ appSchema.pre('validate', function(next) {
       expect(payload).to.have.property('on').that.is.a('boolean')
     } catch (e) { next(e) }
   }
+  else if (type=='gray-switch') {
+    try {
+      expect(payload).to.have.property('level').that.is.a('number');
+      expect(payload.level).to.be.within(0,100);
+    } catch (e) { next(e) }
+  }
   else if (type=='pulse') {
     try {
       expect(payload).to.have.property('transId').that.is.a('number')
