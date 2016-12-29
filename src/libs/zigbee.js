@@ -110,7 +110,6 @@ class Mediator extends Writable {
             const app = yield App.findOne({device: nwkAddr, endPoint}).exec();
             if (app) {
               // 更新app属性
-              // TODO: 补全switch类型payload
               let type;
               let payload;
               switch (deviceId) {
