@@ -28,6 +28,7 @@ class Mediator extends Writable {
     this._writeCache = null;
     // bind
     this._zigbee.on('areqParsed', this._handleAreqParsed.bind(this));
+    this._zigbee.on('error', err => log.error(`zigbee出错，${err}\n`, err));
   }
 
   /**
@@ -67,7 +68,7 @@ class Mediator extends Writable {
         break;
       case 'ZDO_ACTIVE_EP_RSP':
         co(function * () {
-          const { nwkAddr, status, activeEpList } = result;
+          const { nwkAddr, status, activeEpList, statusString } = result;
           if (status == 0) {
             const { Device, App } = self._models;
             const dev = yield Device.findOne({nwk: nwkAddr}).exec();
@@ -95,16 +96,16 @@ class Mediator extends Writable {
                 yield self.write('ZDO_SIMPLE_DESC_REQ', {nwk: nwkAddr, ep});
               }
             } else {
-              log.warn(`设备不在数据库中 @${nwkAddr}`);
+              log.error(`设备不在数据库中 @${nwkAddr}`);
             }
           } else {
-            log.warn(`ZDO_ACTIVE_EP_RSP error. status==${status}`);            
+            log.error(`ZDO_ACTIVE_EP_RSP error. status==${status}`, statusString);            
           }
         }).catch(err => log.error('handle ZDO_ACTIVE_EP_RSP error\n', err));
         break;
       case 'ZDO_SIMPLE_DESC_RSP':
         co(function * () {
-          const { nwkAddr, status, endPoint, deviceId } = result;
+          const { nwkAddr, status, endPoint, deviceId, statusString } = result;
           if (status == 0) {
             const { App } = self._models;
             const app = yield App.findOne({device: nwkAddr, endPoint}).exec();
@@ -136,10 +137,10 @@ class Mediator extends Writable {
                */
               self.emit('handle', name, result);
             } else {
-              log.warn(`app不在数据库中 @${nwkAddr}.${endPoint}`);
+              log.error(`app不在数据库中 @${nwkAddr}.${endPoint}`);
             }
           } else {
-            log.warn(`ZDO_SIMPLE_DESC_RSP error. status==${status}`);
+            log.error(`ZDO_SIMPLE_DESC_RSP error. status==${status}`, statusString);
           }
         }).catch(err => log.error('handle ZDO_SIMPLE_DESC_RSP error\n', err));
         break;
@@ -162,6 +163,7 @@ class Mediator extends Writable {
     const [name, props] = this._writeCache;
     try {
       const onSrspParsed = (srspName, srspResult) => {
+        log.trace('收到srsp', srspName, srspResult);
         if (srspResult.status === 'SUCCESS') {
           callback();
         } else {
@@ -171,6 +173,7 @@ class Mediator extends Writable {
       this._zigbee.once('srspParsed', onSrspParsed);
       this._zigbee.write(name, props)
         .then(() => {
+          // TODO: dose not delete the listener even when timeout
           if (this._zigbee.listeners('srspParsed').indexOf(onSrspParsed) >= 0) {
             // 3s后删除监听器，防止srsp超时引发内存泄漏
             setTimeout(() => {

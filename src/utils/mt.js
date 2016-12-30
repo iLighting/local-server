@@ -208,6 +208,20 @@ function cmd2str(cmd0, cmd1) {
   return `${parseInt(cmd0, 10)}.${parseInt(cmd1, 10)}`
 }
 
+/**
+ * @param name
+ * @param {Array} cmd
+ * @param {Map} cmdMap
+ */
+function injectDefaultSRSP(name, cmd, cmdMap, parser) {
+  cmdMap.set(name, cmd2str(cmd[0], cmd[1]));
+  parser[name] = function(buf) {
+    return parseSrsp(buf);
+  }
+}
+
+// cmdMap
+// ==============================================================
 const cmdMap = new Map([
   // sys
   ['SYS_PING', `${parseInt(0x21, 10)}.1`], // 0x21 0x01
@@ -217,7 +231,7 @@ const cmdMap = new Map([
   ['ZDO_ACTIVE_EP_REQ', cmd2str(0x25, 0x05)],
   ['ZDO_ACTIVE_EP_RSP', cmd2str(0x45, 0x85)],
   ['ZDO_SIMPLE_DESC_REQ', cmd2str(0x25, 0x04)],
-  ['ZDO_SIMPLE_DESC_RSP', cmd2str(0x45, 0x84)],  
+  ['ZDO_SIMPLE_DESC_RSP', cmd2str(0x45, 0x84)],
   // app
   ['APP_MSG', `${parseInt(0x29, 10)}.0`], // 0x29 0x00
   ['APP_MSG_SRSP', `${parseInt(0x69, 10)}.0`], // 0x69 0x00
@@ -271,6 +285,28 @@ cmdMap.checkAreq = function (x) {
   }
 };
 
+// zdoStatusMap
+// ==============================================================
+const zdoStatusMap = new Map([
+  [0x00, 'ZDP_SUCCESS'],
+  [0x80, 'ZDP_INVALID_REQTYPE'],
+  [0x81, 'ZDP_DEVICE_NOT_FOUND'],
+  [0x82, 'ZDP_INVALID_EP'],
+  [0x83, 'ZDP_NOT_ACTIVE'],
+  [0x84, 'ZDP_NOT_SUPPORTED'],
+  [0x85, 'ZDP_TIMEOUT'],
+  [0x86, 'ZDP_NO_MATCH'],
+  [0x88, 'ZDP_NO_ENTRY'],
+  [0x89, 'ZDP_NO_DESCRIPTOR'],
+  [0x8a, 'ZDP_INSUFFICIENT_SPACE'],
+  [0x8b, 'ZDP_NOT_PERMITTED'],
+  [0x8c, 'ZDP_TABLE_FULL'],
+  [0x8d, 'ZDP_NOT_AUTHORIZED'],
+  [0x8e, 'ZDP_BINDING_TABLE_FULL'],
+]);
+
+// builder
+// ==============================================================
 const builder = {
   // sys
   // =================================================
@@ -298,8 +334,9 @@ const builder = {
    * @return {Buffer}
    */
   ZDO_ACTIVE_EP_REQ(nwk) {
-    const data = Buffer.from([0,0,0,0]);
-    data.writeUInt16BE(nwk, 2);
+    const data = new Buffer(4);
+    data.writeUInt16LE(nwk, 0);    
+    data.writeUInt16LE(nwk, 2);
     const [cmd0, cmd1] = cmdMap.getCmdByName('ZDO_ACTIVE_EP_REQ');
     return _genFrame(cmd0, cmd1, data);
   },
@@ -312,8 +349,8 @@ const builder = {
    */
   ZDO_SIMPLE_DESC_REQ({nwk, ep}) {
     const data = new Buffer(5);
-    data.writeUInt16BE(0, 0);
-    data.writeUInt16BE(nwk, 2);
+    data.writeUInt16LE(nwk, 0);
+    data.writeUInt16LE(nwk, 2);
     data.writeUInt8(ep, 4);
     const [cmd0, cmd1] = cmdMap.getCmdByName('ZDO_SIMPLE_DESC_REQ');
     return _genFrame(cmd0, cmd1, data);
@@ -329,9 +366,9 @@ const builder = {
     const msgLen = msg.length;
     const data = new Buffer(7 + msgLen);
     data.writeUInt8(ep, 0);
-    data.writeUInt16BE(destNwk, 1);
+    data.writeUInt16LE(destNwk, 1);
     data.writeUInt8(destEp, 3);
-    data.writeUInt16BE(clusterId, 4);
+    data.writeUInt16LE(clusterId, 4);
     data.writeUInt8(msgLen, 6);
     msg.copy(data, 7);
     const [ cmd0, cmd1 ] = cmdMap.getCmdByName('APP_MSG');
@@ -339,12 +376,14 @@ const builder = {
   }
 };
 
+// parser
+// ==============================================================
 const parser = {
   // sys
   // =================================================
   SYS_PING_SRSP(buf) {
     const { cmd0, cmd1, data } = _parseFrame(buf);
-    const capabilities = data.readUInt16BE(0);
+    const capabilities = data.readUInt16LE(0);
     return {
       cmd0, cmd1,
       capabilities
@@ -359,8 +398,8 @@ const parser = {
    */
   ZDO_END_DEVICE_ANNCE_IND(buf) {
     const { cmd0, cmd1, data } = _parseFrame(buf);
-    const srcAddr = data.readUInt16BE(0);
-    const nwkAddr = data.readUInt16BE(2);
+    const srcAddr = data.readUInt16LE(0);
+    const nwkAddr = data.readUInt16LE(2);
     const ieeeAddr = buf2Ieee(data.slice(4, 4+8));
     const capabilities = data.readUInt8(12);
     const type = !!(capabilities & 0x02) ? 'router' : 'endDevice';
@@ -377,14 +416,15 @@ const parser = {
    */
   ZDO_ACTIVE_EP_RSP(buf) {
     const { cmd0, cmd1, data } = _parseFrame(buf);
-    const srcAddr = data.readUInt16BE(0);
+    const srcAddr = data.readUInt16LE(0);
     const status = data.readUInt8(2);
-    const nwkAddr = data.readUInt16BE(3);
+    const nwkAddr = data.readUInt16LE(3);
     const activeEpCount = data.readUInt8(5);
     const activeEpList = data.slice(6).toJSON().data;
     return {
       cmd0, cmd1,
-      srcAddr, status, nwkAddr, activeEpCount, activeEpList
+      srcAddr, status, nwkAddr, activeEpCount, activeEpList,
+      statusString: zdoStatusMap.get(status)
     }
   },
   /**
@@ -395,17 +435,18 @@ const parser = {
    */
   ZDO_SIMPLE_DESC_RSP(buf) {
     const { cmd0, cmd1, data } = _parseFrame(buf);
-    const srcAddr = data.readUInt16BE(0);
+    const srcAddr = data.readUInt16LE(0);
     const status = data.readUInt8(2);
-    const nwkAddr = data.readUInt16BE(3);
+    const nwkAddr = data.readUInt16LE(3);
     const len = data.readUInt8(5);
     const endPoint = data.readUInt8(6);
-    const profileId = data.readUInt16BE(7);
-    const deviceId = data.readUInt16BE(9);
+    const profileId = data.readUInt16LE(7);
+    const deviceId = data.readUInt16LE(9);
     const deviceVer = data.readUInt8(11);
     return {
       cmd0, cmd1,
-      srcAddr, status, nwkAddr, len, endPoint, profileId, deviceId, deviceVer
+      srcAddr, status, nwkAddr, len, endPoint, profileId, deviceId, deviceVer,
+      statusString: zdoStatusMap.get(status)      
     };
   },
 
@@ -424,9 +465,9 @@ const parser = {
    */
   APP_MSG_FEEDBACK(buf) {
     const { cmd0, cmd1, data } = _genFrame(buf);
-    const nwk = data.readUInt16BE(0);
+    const nwk = data.readUInt16LE(0);
     const ep = data.readUInt8(2);
-    const clusterId = data.readUInt16BE(3);
+    const clusterId = data.readUInt16LE(3);
     const msgLen = data.readUInt8(5);
     const payload = new Buffer(msgLen);
     data.copy(payload, 0, 6);
@@ -437,6 +478,8 @@ const parser = {
   }
 };
 
+injectDefaultSRSP('ZDO_ACTIVE_EP_SRSP', [0x65, 0x05], cmdMap, parser);
+injectDefaultSRSP('ZDO_SIMPLE_DESC_SRSP', [0x65, 0x04], cmdMap, parser);
 
 module.exports = {
   SOF,

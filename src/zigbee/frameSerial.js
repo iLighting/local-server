@@ -20,7 +20,7 @@ class FrameSerial extends Writable {
   }
 
   _handleSerialError(err) {
-    log.error(`串口出错 ${err}\n`, err);
+    log.error(`串口硬件出错 ${err}\n`, err);
     this.emit('error', err);
   }
 
@@ -32,6 +32,7 @@ class FrameSerial extends Writable {
     while (restEnough) {
       [frameBuf, restBuf, restEnough] = shiftFrameFromBuf(restBuf);
       if (frameBuf.length > 0) {
+        log.trace('已收到', frameBuf);
         /**
          * @event data
          */

@@ -12,7 +12,7 @@
       "cwd": "${workspaceRoot}",
       "env": {
         "NODE_ENV": "dev",
-        "MOCK": "true"
+        "MOCK": "false"
       }
     },
     {

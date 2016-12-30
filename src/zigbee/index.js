@@ -42,6 +42,7 @@ class Zigbee extends EventEmitter {
     try {
       const name = cmdMap.getNameByCmd(cmd0, cmd1);
       const result = parser[name](buf);
+      log.trace(isAreqFlag ? 'areqParsed' : 'srspParsed', name, '\n', result);
       /**
        * @event areqParsed
        * @event srspParsed
@@ -52,7 +53,7 @@ class Zigbee extends EventEmitter {
       /**
        * @event error
        */
-      // this.emit('error', e);
+      this.emit('error', e);
     }
   }
 
@@ -70,11 +71,11 @@ class Zigbee extends EventEmitter {
       this._serial.write(buf, null, err => {
         if (err) { reject(err) }
         else {
+          resolve();
           /**
            * @event sreq
            */
           this.emit('sreq', buf);
-          resolve();
         }
       });
     });

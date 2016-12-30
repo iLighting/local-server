@@ -13,6 +13,6 @@ module.exports = {
   ['zigbee/appType/pulse']: 0x0102,
   ['zigbee/appType/light-sensor']: 0x0300,
   // serial
-  ['serial/path']: 'COM4',
+  ['serial/path']: 'COM5',
   ['serial/rate']: 38400,
 };

@@ -68,7 +68,7 @@ router
       if (mode === 'manual') {
         // manual模式下才发送payload
         yield controller.setAppPayload(nwk, ep, updateReq.payload);
-      }
+      } else { log.warn('当前为manual模式，未发送payload') }
       // 非manual模式，忽略payload
       delete updateReq.payload;
       const app = yield App.findOneAndUpdate(

@@ -27,6 +27,7 @@ function sendAppMsg(nwk, ep, payload) {
     if (appMsg[tapp.type]) {
       const msg = appMsg[tapp.type].build(payload);
       if (msg) {
+        log.trace(`准备写入appMsg @${nwk}.${ep}`, msg);
         yield zm.write('APP_MSG', {
           ep: config['zigbee/bridgeEp'],
           destNwk: nwk,
@@ -35,11 +36,13 @@ function sendAppMsg(nwk, ep, payload) {
           msg: msg
         });
         // 同步数据库
+        log.trace(`准备同步数据库 @${nwk}.${ep}\n`, payload);
         const finalApp = yield App.findOneAndUpdate(
           {device: nwk, endPoint: ep},
           { payload },
           { 'new': true }
         ).exec();
+        log.trace('数据库已同步\n', finalApp.toObject());
         return finalApp.toObject();        
       }
     } else {
