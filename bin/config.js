@@ -15,4 +15,9 @@ module.exports = {
   // serial
   ['serial/path']: 'COM5',
   ['serial/rate']: 38400,
+  // log
+  ['log/path']: 'logs/app.log',
+  ['log/maxLogSize']: 10485760,
+  ['log/numBackups']: 3,
+  ['log/level']: 'TRACE',
 };

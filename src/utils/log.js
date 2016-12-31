@@ -4,11 +4,23 @@
 
 const log4js = require('log4js');
 
+const config = global.__config;
+
 log4js.configure({
-  level: 'DEBUG',
-  appenders: [
-    { type: 'console' },
-  ]
+  appenders: [{
+    type: 'logLevelFilter',
+    level: 'INFO',
+    appender: { type: 'console' }
+  }, {
+    type: 'logLevelFilter',
+    level: config['log/level'],
+    appender: {
+      type: 'file',
+      filename: config['log/path'],
+      maxLogSize: config['log/maxLogSize'],
+      numBackups: config['log/numBackups']
+    }
+  }]
 });
 
 module.exports = {

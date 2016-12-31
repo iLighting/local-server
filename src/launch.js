@@ -1,10 +1,11 @@
 const co = require('co');
-const { framework:log } = require('./utils/log');
 
 
 const launch = co.wrap(function * (config) {
   // 注入 config
   global.__config = config;
+
+  const { framework:log } = require('./utils/log');
 
   // 初始化数据库
   // ------------------------
