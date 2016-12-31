@@ -9,6 +9,7 @@
  */
 
 const co = require('co');
+const _ = require('lodash');
 const { Writable } = require('stream');
 const { getModels } = require('../db');
 const { zigbeeMediator: log } = require('../utils/log');
@@ -16,6 +17,129 @@ const zigbee = require('../zigbee');
 
 const models = getModels();
 const config = global.__config;
+
+// areqParserMap
+// =============================================================
+const areqParserMap = {
+  // SYS
+  // ----------------
+  SYS_RESET_IND({name, result, log, models, write, callback}) {
+    log.info(name, '\n', result);
+    callback();
+  },
+  // ZDO
+  // ----------------
+  ZDO_END_DEVICE_ANNCE_IND({name, result, log, models, write, callback}) {
+    co(function * () {
+      const { nwkAddr, ieeeAddr, type } = result;
+      const { Device } = models;
+      yield Device
+        .find()
+        .or([{nwk: nwkAddr}, {ieee: ieeeAddr}])
+        .remove()
+        .exec();
+      yield Device.create({
+        nwk: nwkAddr,
+        ieee: ieeeAddr,
+        type: type,
+        name: `新设备 @${nwkAddr}`,
+      });
+      log.info(`新设备已加入 @${nwkAddr}\n`, result);
+      log.trace(`正在请求设备活动端点 @${nwkAddr}`);
+      yield write('ZDO_ACTIVE_EP_REQ', nwkAddr);
+      callback();
+    }).catch(callback);
+  },
+  ZDO_ACTIVE_EP_RSP({name, result, log, models, write, callback}) {
+    co(function * () {
+      const { nwkAddr, status, activeEpList, statusString } = result;
+      if (status == 0) {
+        const { Device, App } = models;
+        const dev = yield Device.findOne({nwk: nwkAddr}).exec();
+        if (dev) {
+          // 在数据库中创建app
+          for(let i=0; i<activeEpList.length; i++) {
+            const ep = activeEpList[i];
+            yield App.create({
+              device: nwkAddr,
+              endPoint: ep,
+              type: 'unknow',
+              payload: {},
+              name: `新应用 @${nwkAddr}.${ep}`
+            })
+          }
+          log.info(`设备活动端点已获得 @${nwkAddr}, ${activeEpList}`);
+          //
+          log.trace(`start to fetch simple desc @${nwkAddr}. ep=${activeEpList}`);
+          for (let i=0; i<activeEpList.length; i++) {
+            const ep = activeEpList[i];
+            yield write('ZDO_SIMPLE_DESC_REQ', {nwk: nwkAddr, ep});
+          }
+          callback();
+        } else {
+          callback(`设备不在数据库中 @${nwkAddr}`);
+        }
+      } else {
+        callback(`ZDO_ACTIVE_EP_RSP error. status==${status}, ${statusString}`);            
+      }
+    }).catch(callback);
+  },
+  ZDO_SIMPLE_DESC_RSP({name, result, log, models, write, callback}) {
+    co(function * () {
+      const { nwkAddr, status, endPoint, deviceId, statusString } = result;
+      if (status == 0) {
+        const { App } = models;
+        const app = yield App.findOne({device: nwkAddr, endPoint}).exec();
+        if (app) {
+          // 更新app属性
+          let type;
+          let payload;
+          switch (deviceId) {
+            case config['zigbee/appType/lamp']:
+              type = 'lamp'; payload = {on: false}; break;
+            case config['zigbee/appType/gray-lamp']:
+              type = 'gray-lamp'; payload = {level: 0}; break;
+            case config['zigbee/appType/switch']:
+              type = 'switch'; payload = {on: false}; break;
+            case config['zigbee/appType/gray-switch']:
+              type = 'gray-switch'; payload = {level: 0}; break;
+            case config['zigbee/appType/pulse']:
+              type = 'pulse'; payload = {transId: 0}; break;
+            case config['zigbee/appType/light-sensor']:
+              type = 'light-sensor'; payload = {level: 0}; break;
+          }
+          yield app.update({
+            type, payload,
+            name: `${type}@${nwkAddr}.${endPoint}`
+          }).exec();
+          log.info(`应用已刷新 @${nwkAddr}.${endPoint}, type=${type}`);
+          callback();
+        } else {
+          callback(`app不在数据库中 @${nwkAddr}.${endPoint}`);
+        }
+      } else {
+        callback(`ZDO_SIMPLE_DESC_RSP error. status==${status}, ${statusString}`);
+      }
+    }).catch(callback);
+  },
+  ZDO_STATE_CHANGE_IND({name, result, callback}) {
+    log.info(`桥接器状态变更, state=${result.state}`);
+    callback();
+  },
+  // APP
+  // ----------------
+  APP_MSG_FEEDBACK({name, result, log, models, write, callback}) {
+    // 不做处理
+    callback();
+  },
+  // Debug
+  // -----------------
+  DEBUG_STRING({result, log, callback}) {
+    const { msg } = result;
+    log.info(`Debug msg from the bridge: ${msg}`);
+    callback();
+  },
+};
 
 /**
  * @fires handle - 已处理指令帧: name, result
@@ -41,118 +165,34 @@ class Mediator extends Writable {
     // TODO: 拆分 areqParser
     const self = this;
     log.trace(`开始处理 ${name}`);
-    switch (name) {
-      case 'ZDO_END_DEVICE_ANNCE_IND':
-        co(function * () {
-          const { nwkAddr, ieeeAddr, type } = result;
-          const { Device } = self._models;
-          yield Device
-            .find()
-            .or([{nwk: nwkAddr}, {ieee: ieeeAddr}])
-            .remove()
-            .exec();
-          yield Device.create({
-            nwk: nwkAddr,
-            ieee: ieeeAddr,
-            type: type,
-            name: `新设备 @${nwkAddr}`,
-          });
-          log.info(`新设备已加入 @${nwkAddr}\n`, result);
-          log.trace(`正在请求设备活动端点 @${nwkAddr}`);
-          yield self.write('ZDO_ACTIVE_EP_REQ', nwkAddr);
-          /**
-           * @event handle
-           */
+    if (areqParserMap.hasOwnProperty(name)) {
+      const parser = areqParserMap[name];
+      const logx = {
+        trace: log.trace.bind(log),
+        debug: log.debug.bind(log),
+        info: log.info.bind(log),
+        warn: log.warn.bind(log),
+      };
+      const callback = err => {
+        if (err) {
+          log.error(`${name} 处理器出错\n`, err);
+        } else {
+          log.trace(`${name} 处理器完成`);
           self.emit('handle', name, result);
-        }).catch(err => log.error('handle ZDO_END_DEVICE_ANNCE_IND error\n', err));
-        break;
-      case 'ZDO_ACTIVE_EP_RSP':
-        co(function * () {
-          const { nwkAddr, status, activeEpList, statusString } = result;
-          if (status == 0) {
-            const { Device, App } = self._models;
-            const dev = yield Device.findOne({nwk: nwkAddr}).exec();
-            if (dev) {
-              // 在数据库中创建app
-              for(let i=0; i<activeEpList.length; i++) {
-                const ep = activeEpList[i];
-                yield App.create({
-                  device: nwkAddr,
-                  endPoint: ep,
-                  type: 'unknow',
-                  payload: {},
-                  name: `新应用 @${nwkAddr}.${ep}`
-                })
-              }
-              log.info(`设备活动端点已获得 @${nwkAddr}, ${activeEpList}`);
-              /**
-               * @event handle
-               */
-              self.emit('handle', name, result);
-              //
-              log.trace(`start to fetch simple desc @${nwkAddr}. ep=${activeEpList}`);
-              for (let i=0; i<activeEpList.length; i++) {
-                const ep = activeEpList[i];
-                yield self.write('ZDO_SIMPLE_DESC_REQ', {nwk: nwkAddr, ep});
-              }
-            } else {
-              log.error(`设备不在数据库中 @${nwkAddr}`);
-            }
-          } else {
-            log.error(`ZDO_ACTIVE_EP_RSP error. status==${status}`, statusString);            
-          }
-        }).catch(err => log.error('handle ZDO_ACTIVE_EP_RSP error\n', err));
-        break;
-      case 'ZDO_SIMPLE_DESC_RSP':
-        co(function * () {
-          const { nwkAddr, status, endPoint, deviceId, statusString } = result;
-          if (status == 0) {
-            const { App } = self._models;
-            const app = yield App.findOne({device: nwkAddr, endPoint}).exec();
-            if (app) {
-              // 更新app属性
-              let type;
-              let payload;
-              switch (deviceId) {
-                case config['zigbee/appType/lamp']:
-                  type = 'lamp'; payload = {on: false}; break;
-                case config['zigbee/appType/gray-lamp']:
-                  type = 'gray-lamp'; payload = {level: 0}; break;
-                case config['zigbee/appType/switch']:
-                  type = 'switch'; payload = {on: false}; break;
-                case config['zigbee/appType/gray-switch']:
-                  type = 'gray-switch'; payload = {level: 0}; break;
-                case config['zigbee/appType/pulse']:
-                  type = 'pulse'; payload = {transId: 0}; break;
-                case config['zigbee/appType/light-sensor']:
-                  type = 'light-sensor'; payload = {level: 0}; break;
-              }
-              yield app.update({
-                type, payload,
-                name: `${type}@${nwkAddr}.${endPoint}`
-              }).exec();
-              log.info(`应用已刷新 @${nwkAddr}.${endPoint}, type=${type}`)
-              /**
-               * @event handle
-               */
-              self.emit('handle', name, result);
-            } else {
-              log.error(`app不在数据库中 @${nwkAddr}.${endPoint}`);
-            }
-          } else {
-            log.error(`ZDO_SIMPLE_DESC_RSP error. status==${status}`, statusString);
-          }
-        }).catch(err => log.error('handle ZDO_SIMPLE_DESC_RSP error\n', err));
-        break;
-      case 'APP_MSG_FEEDBACK':
-        /**
-         * 不做处理
-         * @event handle
-         */
-        this.emit('handle', name, result);
-        break;
-      default:
-        log.warn(`${name} 处理器未定义`);
+        }
+      };
+      if (typeof(parser) === 'function') {
+        try {
+          parser.bind(null)({
+            name, result, callback,
+            log: logx,
+            models: self._models,
+            write: self.write.bind(self),
+          });
+        } catch(err) { log.error(`${name} 处理器未捕获的错误\n`, err) }
+      } else { log.warn(`areqParser '${name}' is not a function`) }
+    } else {
+      log.warn(`${name} 处理器未定义`);
     }
   }
 

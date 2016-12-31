@@ -225,17 +225,21 @@ function injectDefaultSRSP(name, cmd, cmdMap, parser) {
 const cmdMap = new Map([
   // sys
   ['SYS_PING', `${parseInt(0x21, 10)}.1`], // 0x21 0x01
+  ['SYS_RESET_IND', cmd2str(0x41, 0x80)],  
   // zdo
   ['ZDO_SEC_DEVICE_REMOVE', '0.0'],
   ['ZDO_END_DEVICE_ANNCE_IND', '69.193'], // 0x45 0xc1
-  ['ZDO_ACTIVE_EP_REQ', cmd2str(0x25, 0x05)],
-  ['ZDO_ACTIVE_EP_RSP', cmd2str(0x45, 0x85)],
   ['ZDO_SIMPLE_DESC_REQ', cmd2str(0x25, 0x04)],
+  ['ZDO_ACTIVE_EP_REQ', cmd2str(0x25, 0x05)],
   ['ZDO_SIMPLE_DESC_RSP', cmd2str(0x45, 0x84)],
+  ['ZDO_ACTIVE_EP_RSP', cmd2str(0x45, 0x85)],
+  ['ZDO_STATE_CHANGE_IND', cmd2str(0x45, 0xc0)],
   // app
   ['APP_MSG', `${parseInt(0x29, 10)}.0`], // 0x29 0x00
   ['APP_MSG_SRSP', `${parseInt(0x69, 10)}.0`], // 0x69 0x00
   ['APP_MSG_FEEDBACK', `${parseInt(0x49, 10)}.0`], // 0x49 0x00
+  // Debug
+  ['DEBUG_STRING', cmd2str(0x48, 0x80)],
 ]);
 
 /**
@@ -267,7 +271,7 @@ cmdMap.getNameByCmd = function (cmd0, cmd1) {
       break;
     }
   }
-  if (!name) throw new Error(`${cmdStr} 无对应mt名称`);
+  if (!name) throw new Error(`${cmdStr}(0x${cmd0.toString(16)},0x${cmd1.toString(16)}) 无对应mt名称`);
   return name;
 };
 
@@ -389,6 +393,26 @@ const parser = {
       capabilities
     }
   },
+  SYS_RESET_IND(buf) {
+    const { cmd0, cmd1, data } = _parseFrame(buf);
+    const reason = data.readUInt8(0);
+    const transportRev = data.readUInt8(1);
+    const productId = data.readUInt8(2);
+    const minorRel = data.readUInt8(3);
+    const hwRev = data.readUInt8(4);
+    let reasonString;
+    switch (reason) {
+      case 0: reasonString = 'Power up'; break;
+      case 1: reasonString = 'Externa'; break;
+      case 2: reasonString = 'Watch dog'; break;
+      default: reasonString = 'unknow';
+    }
+    return {
+      cmd0, cmd1,
+      reason, transportRev, productId, minorRel, hwRev,
+      reasonString
+    }
+  },
 
   // zdo
   // =================================================
@@ -449,6 +473,13 @@ const parser = {
       statusString: zdoStatusMap.get(status)      
     };
   },
+  ZDO_STATE_CHANGE_IND(buf) {
+    const { cmd0, cmd1, data } = _parseFrame(buf);
+    const state = data.readUInt8(0);
+    return {
+      cmd0, cmd1, state
+    }
+  },
 
   // app
   // ================================================
@@ -464,7 +495,7 @@ const parser = {
    * @return {{cmd0, cmd1, nwk: (Number|*), ep: (Number|*), clusterId: (Number|*), payload: Buffer}}
    */
   APP_MSG_FEEDBACK(buf) {
-    const { cmd0, cmd1, data } = _genFrame(buf);
+    const { cmd0, cmd1, data } = _parseFrame(buf);
     const nwk = data.readUInt16LE(0);
     const ep = data.readUInt8(2);
     const clusterId = data.readUInt16LE(3);
@@ -474,6 +505,17 @@ const parser = {
     return {
       cmd0, cmd1,
       nwk, ep, clusterId, payload
+    }
+  },
+
+  // Debug
+  // ==============================================
+  DEBUG_STRING(buf) {
+    const { cmd0, cmd1, data } = _parseFrame(buf);
+    const msg = data.toString('ascii');
+    return {
+      cmd0, cmd1,
+      msg
     }
   }
 };
