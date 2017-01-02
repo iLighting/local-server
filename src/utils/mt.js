@@ -499,9 +499,9 @@ const parser = {
     const nwk = data.readUInt16LE(0);
     const ep = data.readUInt8(2);
     const clusterId = data.readUInt16LE(3);
-    const msgLen = data.readUInt8(5);
+    const msgLen = data.readUInt16LE(5);
     const payload = new Buffer(msgLen);
-    data.copy(payload, 0, 6);
+    data.copy(payload, 0, 7);
     return {
       cmd0, cmd1,
       nwk, ep, clusterId, payload

@@ -68,7 +68,7 @@ const areqParserMap = {
               name: `新应用 @${nwkAddr}.${ep}`
             })
           }
-          log.info(`设备活动端点已获得 @${nwkAddr}, ${activeEpList}`);
+          log.info(`设备活动端点已获得 @${nwkAddr}, eps=${activeEpList}`);
           //
           log.trace(`start to fetch simple desc @${nwkAddr}. ep=${activeEpList}`);
           for (let i=0; i<activeEpList.length; i++) {
@@ -107,6 +107,10 @@ const areqParserMap = {
               type = 'pulse'; payload = {transId: 0}; break;
             case config['zigbee/appType/light-sensor']:
               type = 'light-sensor'; payload = {level: 0}; break;
+            case config['zigbee/appType/temperature-sensor']:
+              type = 'temperature-sensor'; payload = {temperature: 0}; break;
+            default:
+              type = 'unknow'; payload = {}; break;
           }
           yield app.update({
             type, payload,
@@ -128,8 +132,9 @@ const areqParserMap = {
   },
   // APP
   // ----------------
-  APP_MSG_FEEDBACK({name, result, log, models, write, callback}) {
+  APP_MSG_FEEDBACK({result, log, models, write, callback}) {
     // 不做处理
+    log.info('APP_MSG_FEEDBACK\n', result);
     callback();
   },
   // Debug

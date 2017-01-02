@@ -1,3 +1,7 @@
+/**
+ * `src/libs/controller:sendAppMsg()`中调用应用模型的`build`方法
+ */
+
 
 /**
  * 检查对象是否匹配keyList
@@ -93,8 +97,26 @@ const pulse = {
 };
 Object.freeze(pulse);
 
+const temperatureSensor = {
+  build(payload) {
+    return Buffer.from([0]);
+  },
+  parse(buf) {
+    const cmdId = buf.readUInt8(0);
+    switch (cmdId) {
+      // temperature feedback
+      case 1:
+        return ['temperatureFeedback', { temperature: buf.readInt16LE(1) / 100 }];
+      default:
+        return ['unknow', cmdId];
+    }
+  }
+};
+Object.freeze(temperatureSensor);
+
 module.exports = {
   lamp,
   'gray-lamp': grayLamp,
   pulse,
+  'temperature-sensor': temperatureSensor
 };

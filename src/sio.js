@@ -8,6 +8,7 @@ const { socketIo: log } = require('./utils/log');
 
 const eventNames = [
   'mediator/handle',
+  'appFeedback/handle',
   'sys/change'
 ];
 
@@ -28,13 +29,20 @@ function handler(eventName, ...args) {
           case 'ZDO_SIMPLE_DESC_RSP':
             this.emit('data', gen('device/join.success', result));
             break;
-          case 'APP_MSG_FEEDBACK':
-            // 以device为粒度
-            this.emit('data', gen('device/change.success', result));
-            break;
+          // case 'APP_MSG_FEEDBACK':
+          //   // 以device为粒度
+          //   this.emit('data', gen('device/change.success', result));
+          //   break;
         }
       }
       break;
+    
+    // appFeedback 事件
+    case 'appFeedback/handle': {
+      const { nwk, ep, payload} = args[0];
+      this.emit('data', gen('device/change.success', {nwk, ep, payload}));
+      break;
+    }
 
     // sys 事件
     case 'sys/change':

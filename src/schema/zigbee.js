@@ -98,6 +98,7 @@ const appSchema = new Schema({
       'pulse',
       // sensor
       'light-sensor',
+      'temperature-sensor'
     ]
   },
   payload: {
@@ -156,6 +157,11 @@ appSchema.pre('validate', function(next) {
   else if (type=='light-sensor') {
     try {
       expect(payload).to.have.property('level').that.is.a('number')
+    } catch (e) { next(e) }
+  }
+  else if (type=='temperature-sensor') {
+    try {
+      expect(payload).to.have.property('temperature').that.is.a('number')
     } catch (e) { next(e) }
   }
   next();

@@ -5,6 +5,7 @@
 const { EventEmitter } = require('events');
 const zigbee = require('../zigbee');
 const mediator = require('./zigbee');
+const appFeedback = require('./appFeedback');
 const sys = require('./sys');
 
 /**
@@ -19,6 +20,9 @@ const sys = require('./sys');
  * - mediator/
  *  - handle
  * 
+ * - appFeedback/
+ *  - handle
+ * 
  * - sys/
  *  - change
  */
@@ -31,6 +35,8 @@ class EventCenter extends EventEmitter {
     });
     // 绑定zigbee中介者事件
     mediator.on('handle', this.handleEvent.bind(this, 'mediator', 'handle'));
+    // 绑定appFeedback事件
+    appFeedback.on('handle', this.handleEvent.bind(this, 'appFeedback', 'handle'));
     // 绑定系统事件
     sys.on('change', this.handleEvent.bind(this, 'sys', 'change'));
   }

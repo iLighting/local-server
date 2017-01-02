@@ -12,6 +12,7 @@ module.exports = {
   ['zigbee/appType/gray-switch']: 0x0101,
   ['zigbee/appType/pulse']: 0x0102,
   ['zigbee/appType/light-sensor']: 0x0300,
+  ['zigbee/appType/temperature-sensor']: 0x0301,
   // serial
   ['serial/path']: 'COM5',
   ['serial/rate']: 38400,
