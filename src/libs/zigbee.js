@@ -105,8 +105,8 @@ const areqParserMap = {
               type = 'gray-switch'; payload = {level: 0}; break;
             case config['zigbee/appType/pulse']:
               type = 'pulse'; payload = {transId: 0}; break;
-            case config['zigbee/appType/light-sensor']:
-              type = 'light-sensor'; payload = {level: 0}; break;
+            case config['zigbee/appType/illuminance-sensor']:
+              type = 'illuminance-sensor'; payload = {level: 0}; break;
             case config['zigbee/appType/temperature-sensor']:
               type = 'temperature-sensor'; payload = {temperature: 0}; break;
             default:

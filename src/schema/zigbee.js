@@ -97,7 +97,7 @@ const appSchema = new Schema({
       'gray-switch',
       'pulse',
       // sensor
-      'light-sensor',
+      'illuminance-sensor',
       'temperature-sensor'
     ]
   },
@@ -154,7 +154,7 @@ appSchema.pre('validate', function(next) {
       expect(payload).to.have.property('transId').that.is.a('number')
     } catch (e) { next(e) }
   }
-  else if (type=='light-sensor') {
+  else if (type=='illuminance-sensor') {
     try {
       expect(payload).to.have.property('level').that.is.a('number')
     } catch (e) { next(e) }

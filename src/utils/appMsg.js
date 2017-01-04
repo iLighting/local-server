@@ -114,9 +114,27 @@ const temperatureSensor = {
 };
 Object.freeze(temperatureSensor);
 
+const illuminanceSensor = {
+  build(payload) {
+    return Buffer.from([0]);
+  },
+  parse(buf) {
+    const cmdId = buf.readUInt8(0);
+    switch (cmdId) {
+      // light feedback
+      case 1:
+        return ['illuminanceFeedback', { level: buf.readUInt16LE(1) }];
+      default:
+        return ['unknow', cmdId];
+    }
+  }
+};
+Object.freeze(illuminanceSensor);
+
 module.exports = {
   lamp,
   'gray-lamp': grayLamp,
   pulse,
-  'temperature-sensor': temperatureSensor
+  'temperature-sensor': temperatureSensor,
+  'illuminance-sensor': illuminanceSensor
 };
