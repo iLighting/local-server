@@ -25,6 +25,11 @@ const launch = co.wrap(function * (config) {
   // -----------------------
   const controller = require('./libs/controller');
 
+  // 初始化 local app server
+  const localApp = require('./localApp');
+  localApp.listen(config['localServer/port'], 
+    process.env.NODE_ENV==='dev' ? '0.0.0.0' : 'localhost');
+
   // 初始化Server
   // ------------------------
   const app = require('./app');

@@ -29,6 +29,7 @@ module.exports = {
   sys: log4js.getLogger('sys'),
   transfer: log4js.getLogger('frameTransfer'),
   app: log4js.getLogger('app'),
+  localApp: log4js.getLogger('localApp'),
   serial: log4js.getLogger('serial'),
   frameSerial: log4js.getLogger('frameSerial'),
   client: log4js.getLogger('frameHandler'),

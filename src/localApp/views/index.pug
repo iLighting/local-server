@@ -1,0 +1,23 @@
+doctype html
+html
+
+  head
+    meta(name="viewport", content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0")
+    title iLight 监视器
+  
+  body
+    h1 iLight 正在运行
+    table
+      tr
+        td 当前时间:
+        td#time loading
+      tr
+        td 已运行:
+        td#uptime loading
+      tr
+        td 地址
+        td#ip loading
+
+    script(src="/assets/zepto.min.js")
+    script(src="/assets/moment-with-locales.min.js")
+    script(src="/assets/index.js")

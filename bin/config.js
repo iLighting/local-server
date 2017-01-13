@@ -3,6 +3,8 @@ module.exports = {
   ['db/path']: 'mongodb://localhost/test',
   // server
   ['server/port']: 3000,
+  // local server
+  ['localServer/port']: 3001,
   // zigbee
   ['zigbee/bridgeEp']: 8,
   ['zigbee/appMsgCluster']: 0xff00,
