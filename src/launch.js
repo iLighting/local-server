@@ -45,6 +45,10 @@ const launch = co.wrap(function * (config) {
   // 启动
   server.listen(config['server/port']);
   log.info('应用启动成功，端口号 %s', config['server/port']);
+
+  // extra
+  require('./libs/appAsr');
+  
   return { db, models, sys, app };
 });
 

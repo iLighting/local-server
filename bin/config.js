@@ -15,6 +15,7 @@ module.exports = {
   ['zigbee/appType/pulse']: 0x0102,
   ['zigbee/appType/illuminance-sensor']: 0x0300,
   ['zigbee/appType/temperature-sensor']: 0x0301,
+  ['zigbee/appType/asr-sensor']: 0x0302,
   // serial
   ['serial/path']: 'COM5',
   ['serial/rate']: 38400,

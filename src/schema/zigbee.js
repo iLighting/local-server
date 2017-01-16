@@ -98,7 +98,8 @@ const appSchema = new Schema({
       'pulse',
       // sensor
       'illuminance-sensor',
-      'temperature-sensor'
+      'temperature-sensor',
+      'asr-sensor'
     ]
   },
   payload: {

@@ -131,10 +131,29 @@ const illuminanceSensor = {
 };
 Object.freeze(illuminanceSensor);
 
+const asrSensor = {
+  build(payload) {
+    // 0: fetch
+    return Buffer.from([0]);
+  },
+  parse(buf) {
+    const cmdId = buf.readUInt8(0);
+    switch (cmdId) {
+      // asr feedback
+      case 1:
+        return ['asrFeedback', { result0: buf.readUInt8(1) }];
+      default:
+        return ['unknow', cmdId];
+    }
+  }
+};
+Object.freeze(asrSensor);
+
 module.exports = {
   lamp,
   'gray-lamp': grayLamp,
   pulse,
   'temperature-sensor': temperatureSensor,
-  'illuminance-sensor': illuminanceSensor
+  'illuminance-sensor': illuminanceSensor,
+  'asr-sensor': asrSensor,
 };

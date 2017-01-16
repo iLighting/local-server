@@ -109,6 +109,8 @@ const areqParserMap = {
               type = 'illuminance-sensor'; payload = {level: 0}; break;
             case config['zigbee/appType/temperature-sensor']:
               type = 'temperature-sensor'; payload = {temperature: 0}; break;
+            case config['zigbee/appType/asr-sensor']:
+              type = 'asr-sensor'; payload = {result0: 0}; break;
             default:
               type = 'unknow'; payload = {}; break;
           }

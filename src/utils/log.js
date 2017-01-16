@@ -41,4 +41,5 @@ module.exports = {
   zigbee: log4js.getLogger('zigbee'),  
   controller: log4js.getLogger('controller'),
   appFeedback: log4js.getLogger('appFeedback'),
+  appAsr: log4js.getLogger('appAsr'),
 };
