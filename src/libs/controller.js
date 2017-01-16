@@ -70,6 +70,8 @@ class ManualController extends StateControllerBase {
   setAppPayload(nwk, ep, payload) {
     return sendAppMsg(nwk, ep, payload);
   }
+
+  setScene(sid) { log.warn('当前模式下setScene()无效, 默认resolve'); return Promise.resolve(); }
 }
 
 /**
@@ -94,6 +96,8 @@ class StaticController extends StateControllerBase {
       }
     })(this);
   }
+
+  setAppPayload() { log.warn('当前模式下setAppPayload()无效, 默认resolve'); return Promise.resolve(); }
 }
 
 /**
@@ -144,6 +148,10 @@ class Controller extends EventEmitter {
     return this._targetIns.setAppPayload(nwk, ep, payload);
   }
 
+  /**
+   * @param {Number} sid
+   * @return {Promise}
+   */
   setScene(sid) {
     log.info(`setScene ${sid}`);
     return this._targetIns.setScene(sid).then(() => sys.mergeSysIn('status', {sceneId: sid}))

@@ -45,9 +45,21 @@ const devDesc = [
     name: `router@1`,
     apps: [{
       endPoint: 8,
-      type: 'pulse',
-      name: '轻触开关1',
-      payload: {transId: 1}
+      type: 'illuminance-sensor',
+      name: '光照传感器1',
+      payload: {level: 0}
+    }]
+  },
+  {
+    nwk: nwk++,
+    ieee: '00-00-00-00-00-00-01-01',
+    type: 'router',
+    name: `router@2`,
+    apps: [{
+      endPoint: 8,
+      type: 'temperature-sensor',
+      name: '温度传感器1',
+      payload: {temperature: 0}
     }]
   }
 ];
@@ -75,13 +87,28 @@ const sceneDesc = [
   }
 ];
 
+const judgeRuleGroupDesc = [
+  {
+    sceneIndex: 0,
+    rules: [
+      {
+        ieee: '00-00-00-00-00-00-01-00',
+        ep: 8,
+        type: 'lt',
+        payload: 150
+      }
+    ]
+  }
+]
+
 module.exports = function * mock(models) {
   // 清空数据库
-  const { Device, App, StaticScene, StaticSceneItem } = models;
+  const { Device, App, StaticScene, StaticSceneItem, JudgeRuleGroup } = models;
   yield Device.remove().exec();
   yield App.remove().exec();
   yield StaticScene.remove().exec();
   yield StaticSceneItem.remove().exec();
+  yield JudgeRuleGroup.remove().exec();
 
   // create devices
   for(let i=0; i<devDesc.length; i++) {
@@ -111,5 +138,15 @@ module.exports = function * mock(models) {
         scenePayload: items[j].scenePayload
       })
     }
+  }
+
+  // create judgeRuleGroupSchema
+  for(let i=0; i<judgeRuleGroupDesc.length; i++) {
+    const { sceneIndex, rules } = judgeRuleGroupDesc[i];
+    const sceneList = yield StaticScene.find().exec();
+    yield JudgeRuleGroup.create({
+      scene: sceneList[i].id,
+      rules
+    })
   }
 };

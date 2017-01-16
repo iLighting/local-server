@@ -41,5 +41,9 @@ module.exports = {
   zigbee: log4js.getLogger('zigbee'),  
   controller: log4js.getLogger('controller'),
   appFeedback: log4js.getLogger('appFeedback'),
+<<<<<<< HEAD
   appAsr: log4js.getLogger('appAsr'),
+=======
+  sceneChooser: log4js.getLogger('sceneChooser'),
+>>>>>>> scene-chooser
 };

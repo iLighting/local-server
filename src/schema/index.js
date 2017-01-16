@@ -2,5 +2,6 @@ module.exports = Object.assign(
   {},
   require('./zigbee'),
   require('./scene'),
-  require('./sys')
+  require('./sys'),
+  require('./sceneChooser')
 );

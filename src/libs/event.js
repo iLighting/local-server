@@ -1,11 +1,12 @@
 /**
- * 事件中心
+ * 事件中心 **对外**
  */
 
 const { EventEmitter } = require('events');
 const zigbee = require('../zigbee');
 const mediator = require('./zigbee');
 const appFeedback = require('./appFeedback');
+const sceneChooser = require('./sceneChooser');
 const sys = require('./sys');
 
 /**
@@ -19,6 +20,9 @@ const sys = require('./sys');
  * 
  * - mediator/
  *  - handle
+ * 
+ * - sceneChooser/
+ *  - change
  * 
  * - appFeedback/
  *  - handle
@@ -37,6 +41,8 @@ class EventCenter extends EventEmitter {
     mediator.on('handle', this.handleEvent.bind(this, 'mediator', 'handle'));
     // 绑定appFeedback事件
     appFeedback.on('handle', this.handleEvent.bind(this, 'appFeedback', 'handle'));
+    // 绑定sceneChooser事件
+    sceneChooser.on('change', this.handleEvent.bind(this, 'sceneChooser', 'change'));
     // 绑定系统事件
     sys.on('change', this.handleEvent.bind(this, 'sys', 'change'));
   }

@@ -1,8 +1,31 @@
 
+const _ = require('lodash');
 const { genFrame, parseFrame } = require('../utils/mt');
+
+const config = global.__config;
 
 function frame(cmd0, cmd1, bl) {
   return genFrame(cmd0, cmd1, Buffer.from(bl));
+}
+
+/**
+ * @param {number} cmd0
+ * @param {number} cmd1
+ * @param {number} nwk
+ * @param {number} ep
+ * @param {Array} pl
+ * @return {Buffer}
+ */
+function appMsg({cmd0, cmd1, nwk, ep, pl}) {
+  const bl = Buffer.from(pl);
+  const len = pl.length;
+  const data = new Buffer(7+len);
+  data.writeUInt16LE(nwk, 0);
+  data.writeUInt8(ep, 2);
+  data.writeUInt16LE(config['zigbee/appMsgCluster'], 3);
+  data.writeUInt16LE(len, 5);
+  bl.copy(data, 7, 0, len);
+  return genFrame(cmd0, cmd1, data);
 }
 
 module.exports = function (serial) {
@@ -39,4 +62,15 @@ module.exports = function (serial) {
   // setInterval(() => {
   //   frameSerial.put(frame(0x49, 0, [0,1, 8, 0xff,0, 2, 0,transId++]))
   // }, 5000);
+
+  // random illuminance
+  setInterval(() => {
+    serial.put(appMsg({
+      cmd0: 0x49,
+      cmd1: 0,
+      nwk: 3,
+      ep: 8,
+      pl: [1, _.random(100, 200), 0]
+    }))
+  }, 5000)
 };

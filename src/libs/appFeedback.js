@@ -8,10 +8,11 @@ const zm = require('./zigbee');
 
 /**
  * 处理AppFeedback
+ * 解析APP_MSG_FEEDBACK，并更新数据库
  * 
  * @class AppFeedback
  * @extends {EventEmitter}
- * @fires handle - {nwk, ep, payload}
+ * @fires handle - {nwk, ep, type, payload}
  */
 class AppFeedback extends EventEmitter {
   constructor() {
@@ -44,6 +45,7 @@ class AppFeedback extends EventEmitter {
             log.info(`应用反馈 ${app.type} @${nwk}.${ep}\n`, parsedPayload);;
             self.emit('handle', {
               nwk, ep,
+              type: app.type,
               payload: parsedPayload
             });
           } else { log.warn(`无法解析 ${nwk}.${ep} 的反馈:`, pBuf) }

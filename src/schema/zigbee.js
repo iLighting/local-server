@@ -4,6 +4,7 @@ const expect = require('chai').expect;
 const Schema = require('mongoose').Schema;
 
 const ObjectId = Schema.Types.ObjectId;
+const config = global.__config;
 
 // device
 // ---------------------------------------
@@ -157,12 +158,16 @@ appSchema.pre('validate', function(next) {
   }
   else if (type=='illuminance-sensor') {
     try {
-      expect(payload).to.have.property('level').that.is.a('number')
+      expect(payload).to.have.property('level').that.is.a('number');
+      const [low, high] = config['app/illuminance-sensor/range'];
+      expect(payload.level).to.be.within(low, high);
     } catch (e) { next(e) }
   }
   else if (type=='temperature-sensor') {
     try {
-      expect(payload).to.have.property('temperature').that.is.a('number')
+      expect(payload).to.have.property('temperature').that.is.a('number');
+      const [low, high] = config['app/temperature-sensor/range'];
+      expect(payload.temperature).to.be.within(low, high);
     } catch (e) { next(e) }
   }
   next();

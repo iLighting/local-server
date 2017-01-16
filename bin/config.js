@@ -15,7 +15,13 @@ module.exports = {
   ['zigbee/appType/pulse']: 0x0102,
   ['zigbee/appType/illuminance-sensor']: 0x0300,
   ['zigbee/appType/temperature-sensor']: 0x0301,
+<<<<<<< HEAD
   ['zigbee/appType/asr-sensor']: 0x0302,
+=======
+  // app
+  ['app/illuminance-sensor/range']: [0, 65535],
+  ['app/temperature-sensor/range']: [-50, 100],
+>>>>>>> scene-chooser
   // serial
   ['serial/path']: 'COM5',
   ['serial/rate']: 38400,

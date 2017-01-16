@@ -139,6 +139,20 @@ router
     }
   });
 
+// 场景选择器
+// ====================================================================
+
+router
+  .get('/sceneChooser', authCheck, function * () {
+    const { JudgeRuleGroup } = this.mount.models;
+    try {
+      const groups = yield JudgeRuleGroup.find().exec();
+      this.body = new Msg(groups);
+    } catch (e) {
+      log.error(e);
+      this.body = new Msg(null, e);
+    }
+  })
 
 // 系统相关
 // ====================================================================
