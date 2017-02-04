@@ -28,6 +28,21 @@ app.use(
   }
 )
 
+// favicon.ico
+// ====================================
+
+app.use(
+  function * (next) {
+    const urlPath = this.request.path;
+    if (urlPath === '/favicon.ico') {
+      yield send(this, path.join('statics', 'favicon.ico'), {
+        root: path.join(__dirname),
+        gzip: true
+      })
+    } else yield next
+  }
+)
+
 // use pug
 // ====================================
 
