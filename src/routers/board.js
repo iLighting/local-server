@@ -1,5 +1,6 @@
 const Router = require('koa-router');
 const body = require('co-body');
+const useragent = require('useragent');
 const { app: log } = require('../utils/log');
 const _ = require('lodash');
 const authCheck = require('./mix/authCheck');
@@ -11,7 +12,17 @@ const router = new Router({
 
 router
   .get('/', authCheck, function * () {
-    this.render('board', {
+    const reqUa = this.get('user-agent');
+    const browserDetectiveObj = useragent.is(reqUa);
+    let tempelateName = 'board';
+    if (
+      browserDetectiveObj.mobile_safari
+      || browserDetectiveObj.android
+    ) {
+      tempelateName = 'board-mobile';
+    }
+    log.info(browserDetectiveObj, tempelateName);
+    this.render(tempelateName, {
       userName: this.state.userName
     });
   })
