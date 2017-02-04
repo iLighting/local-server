@@ -21,7 +21,6 @@ router
     ) {
       tempelateName = 'board-mobile';
     }
-    log.info(browserDetectiveObj, tempelateName);
     this.render(tempelateName, {
       userName: this.state.userName
     });
