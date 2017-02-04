@@ -8,7 +8,8 @@ const router = new Router();
 
 function getNormalizedSysInfo() {
   const addrList = [];
-  _.each(os.networkInterfaces(), interface => {
+  _.each(os.networkInterfaces(), (interface, name) => {
+    if (name.toLowerCase().indexOf('wlan') < 0) return;
     interface.forEach(item => {
       if (item.family === 'IPv4' && item.internal === false) {
         addrList.push(item.address);
