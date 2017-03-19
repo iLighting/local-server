@@ -5,6 +5,7 @@ const _ = require('lodash');
 const mix = require('../utils/mix');
 
 const judgeRuleGroupSchema = new Schema({
+  name: String,
   scene: Schema.Types.ObjectId,
   rules: [],
 }, {

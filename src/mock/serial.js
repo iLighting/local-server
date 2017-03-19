@@ -64,13 +64,13 @@ module.exports = function (serial) {
   // }, 5000);
 
   // random illuminance
-  setInterval(() => {
-    serial.put(appMsg({
-      cmd0: 0x49,
-      cmd1: 0,
-      nwk: 3,
-      ep: 8,
-      pl: [1, _.random(100, 200), 0]
-    }))
-  }, 5000)
+  // setInterval(() => {
+  //   serial.put(appMsg({
+  //     cmd0: 0x49,
+  //     cmd1: 0,
+  //     nwk: 3,
+  //     ep: 8,
+  //     pl: [1, _.random(100, 200), 0]
+  //   }))
+  // }, 5000)
 };

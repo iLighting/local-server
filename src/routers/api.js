@@ -147,10 +147,54 @@ router
     const { JudgeRuleGroup } = this.mount.models;
     try {
       const groups = yield JudgeRuleGroup.find().exec();
-      this.body = new Msg(groups);
+      this.body = new Msg(_.map(groups, g => g.toObject()));
     } catch (e) {
       log.error(e);
       this.body = new Msg(null, e);
+    }
+  })
+  .post('/sceneChooser', authCheck, function * () {
+    const { JudgeRuleGroup } = this.mount.models;
+    const reqGroup = yield body.json(this);
+    try {
+      const group = yield JudgeRuleGroup.create({
+        name: reqGroup.name,
+        scene: reqGroup.scene,
+        rules: reqGroup.rules,
+      });
+      this.body = new Msg(group.toObject())
+    } catch (e) {
+      log.error(e);
+      this.body = new Msg(reqGroup, e);
+    }
+  })
+  .put('/sceneChooser/:id', authCheck, function * () {
+    const { JudgeRuleGroup } = this.mount.models;
+    const reqGroup = yield body.json(this);
+    const { id: groupId } = this.params;
+    try {
+      const normalizedReqGroup = _.pick(reqGroup, ['name', 'scene', 'rules']);
+      const group = yield JudgeRuleGroup.findById(groupId).exec();
+      if (group) {
+        yield group.update(normalizedReqGroup).exec();
+        this.body = new Msg(normalizedReqGroup);
+      } else {
+        throw new Error(`规则组 ${groupId} 不存在`)
+      }
+    } catch (e) {
+      log.error(e);
+      this.body = new Msg(groupId, e);
+    }
+  })
+  .delete('/sceneChooser/:id', authCheck, function * () {
+    const { JudgeRuleGroup } = this.mount.models;
+    const { id: groupId } = this.params;
+    try {
+      yield JudgeRuleGroup.remove({id: groupId}).exec();
+      this.body = new Msg(groupId);
+    } catch (e) {
+      log.error(e);
+      this.body = new Msg(groupId, e);
     }
   })
 
