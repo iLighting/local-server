@@ -89,6 +89,7 @@ const sceneDesc = [
 
 const judgeRuleGroupDesc = [
   {
+    name: '选择器1',
     sceneIndex: 0,
     rules: [
       {
@@ -142,9 +143,10 @@ module.exports = function * mock(models) {
 
   // create judgeRuleGroupSchema
   for(let i=0; i<judgeRuleGroupDesc.length; i++) {
-    const { sceneIndex, rules } = judgeRuleGroupDesc[i];
+    const { name, sceneIndex, rules } = judgeRuleGroupDesc[i];
     const sceneList = yield StaticScene.find().exec();
     yield JudgeRuleGroup.create({
+      name,
       scene: sceneList[i].id,
       rules
     })
