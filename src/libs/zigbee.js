@@ -18,6 +18,7 @@ const zigbee = require('../zigbee');
 const models = getModels();
 const config = global.__config;
 
+
 // areqParserMap
 // =============================================================
 const areqParserMap = {
@@ -226,7 +227,7 @@ class Mediator extends Writable {
             setTimeout(() => {
               this._zigbee.removeListener('srspParsed', onSrspParsed);
               log.warn(`${name} srsp 超时，删除监听器`);
-              callback(new Error(`${name} srsp 超时`));
+              // callback(new Error(`${name} srsp 超时`));
             }, 3000)
           }
         })

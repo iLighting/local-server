@@ -1,4 +1,4 @@
-
+const co = require('co');
 const { EventEmitter } = require('events');
 const { zigbee: log } = require('../utils/log');
 const { parseFrame, cmdMap, parser, builder } = require('../utils/mt');
@@ -17,6 +17,8 @@ class Zigbee extends EventEmitter {
   constructor({serial}) {
     super();
     this._serial = serial;
+    this._writeQueue = [];
+    this._isQueueing = false;
     // bind
     this._serial.on('error', this._handleFrameError.bind(this));
     this._serial.on('data', this._handleFrameData.bind(this));
@@ -57,6 +59,31 @@ class Zigbee extends EventEmitter {
     }
   }
 
+  flushWriteQueue() {
+    const queue = this._writeQueue;
+    while (queue.length >= 1) {
+      const [name, props, promise] = queue.shift();
+      const buf = builder[name](props);
+      this._serial.write(buf, null, err => {
+        if (err) promise.reject(err);
+        else {
+          promise.resolve();
+          this.emit('sreq', buf);
+        }
+      })
+    }
+  }
+
+  launchWriteLoop() {
+    if (!this._isQueueing) {
+      this._isQueueing = true;
+      setTimeout(() => {
+        this.flushWriteQueue();
+        this._isQueueing = false;
+      }, 10);
+    }
+  }
+
   /**
    * 写入串口，写入后resolve
    * 已被zigbeeMediator代理，不要直接使用此函数发数据
@@ -66,25 +93,22 @@ class Zigbee extends EventEmitter {
    * @return {Promise}
    */
   write(name, props) {
-    const buf = builder[name](props);
     return new Promise((resolve, reject) => {
-      this._serial.write(buf, null, err => {
-        if (err) { reject(err) }
-        else {
-          resolve();
-          /**
-           * @event sreq
-           */
-          this.emit('sreq', buf);
-        }
-      });
-    });
+      this._writeQueue.push([name, props, {resolve, reject}]);
+      this.launchWriteLoop();
+    })
   }
+
 }
 
-module.exports = new Zigbee({
+const ins = new Zigbee({
   serial: frameSerial
 });
+
+ins.setMaxListeners(0);
+ins.launchWriteLoop();
+
+module.exports = ins;
 
 
 
