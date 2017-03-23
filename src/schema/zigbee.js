@@ -100,6 +100,7 @@ const appSchema = new Schema({
       // sensor
       'illuminance-sensor',
       'temperature-sensor',
+      'occupy-sensor',
       'asr-sensor'
     ]
   },
@@ -168,6 +169,16 @@ appSchema.pre('validate', function(next) {
       expect(payload).to.have.property('temperature').that.is.a('number');
       const [low, high] = config['app/temperature-sensor/range'];
       expect(payload.temperature).to.be.within(low, high);
+    } catch (e) { next(e) }
+  }
+  else if (type == 'occupy-sensor') {
+    try {
+      expect(payload).to.have.property('occupy').that.is.a('boolean');
+    } catch (e) { next(e) }
+  }
+  else if (type == 'asr-sensor') {
+    try {
+      expect(payload).to.have.property('index').that.is.a('number');
     } catch (e) { next(e) }
   }
   next();
