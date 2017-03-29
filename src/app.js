@@ -1,12 +1,31 @@
 const koa = require('koa');
+const compress = require('koa-compress');
 const path = require('path');
 const Pug = require('koa-pug')
 const send = require('koa-send');
-const { app: log } = require('./utils/log');
+const {
+  app: log
+} = require('./utils/log');
 
 const app = koa();
 
-app.use(function * (next) {
+// compress
+// ==============================
+
+app.use(compress({
+  filter: function (type) {
+    if (['application/javascript', 'text/css', 'text/html'].indexOf(type) >= 0) {
+      return true
+    }
+    return false
+  },
+  threshold: 2048,
+}))
+
+// log
+// ==============================
+
+app.use(function* (next) {
   log.info(this.request.method, this.request.url);
   yield next;
 });
@@ -15,7 +34,7 @@ app.use(function * (next) {
 // ====================================
 
 app.use(
-  function * (next) {
+  function* (next) {
     const urlPath = this.request.path;
     if (urlPath.indexOf('/statics') === 0) {
       yield send(this, urlPath, {
@@ -32,7 +51,7 @@ app.use(
 // ====================================
 
 app.use(
-  function * (next) {
+  function* (next) {
     const urlPath = this.request.path;
     if (urlPath === '/favicon.ico') {
       yield send(this, path.join('statics', 'favicon.ico'), {
@@ -67,7 +86,7 @@ pug.use(app);
 // use auth
 // ====================================
 
-app.use(function * (next) {
+app.use(function* (next) {
   this.state.userName = this.cookies.get('userName');
   yield next
 })
@@ -77,7 +96,7 @@ app.use(function * (next) {
 
 app.use(require('./routers'));
 
-app.use(function * (next) {
+app.use(function* (next) {
   this.throw(404, '路由未定义')
 });
 
