@@ -1,5 +1,5 @@
 const koa = require('koa');
-const compress = require('koa-compress');
+// const compress = require('koa-compress');
 const path = require('path');
 const Pug = require('koa-pug')
 const send = require('koa-send');
@@ -12,15 +12,20 @@ const app = koa();
 // compress
 // ==============================
 
-app.use(compress({
-  filter: function (type) {
-    if (['application/javascript', 'text/css', 'text/html'].indexOf(type) >= 0) {
-      return true
-    }
-    return false
-  },
-  threshold: 2048,
-}))
+// const compressFunc = compress({
+//   filter: function (type) {
+//     if (['application/javascript', 'text/css', 'text/html'].indexOf(type) >= 0) {
+//       return true
+//     }
+//     return false
+//   },
+//   threshold: 2048,
+// })
+
+// app.use(function* (next) {
+//   compressFunc(this, next);
+// })
+
 
 // log
 // ==============================
