@@ -4,14 +4,18 @@
  */
 
 const co = require('co');
-const { Writable } = require('stream');
+const {
+  Writable
+} = require('stream');
 const SerialPort = require('serialport');
-const { serial: log } = require('../../utils/log');
+const {
+  serial: log
+} = require('../../utils/log');
 
 const config = global.__config;
 
-const serial =  new SerialPort(config['serial/path'], {
-  baudRate: config['serial/rate'],
+const serial = new SerialPort(config.get('serial_path'), {
+  baudRate: config.get('serial_rate'),
   dataBits: 8,
   stopBits: 1,
   parity: 'none',

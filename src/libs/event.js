@@ -2,7 +2,9 @@
  * 事件中心 **对外**
  */
 
-const { EventEmitter } = require('events');
+const {
+  EventEmitter
+} = require('events');
 const zigbee = require('../zigbee');
 const mediator = require('./zigbee');
 const appFeedback = require('./appFeedback');
@@ -11,7 +13,7 @@ const sys = require('./sys');
 
 /**
  * 事件列表：
- * - zigbee/
+ * - zigbee_
  *  - sreq
  *  - srsp
  *  - areq

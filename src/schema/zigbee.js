@@ -41,32 +41,38 @@ const deviceSchema = new Schema({
 });
 deviceSchema.name = 'Device';
 deviceSchema.pre('validate', function (next) {
-  const { ieee } = this;
+  const {
+    ieee
+  } = this;
   try {
     expect(ieee).to.match(/^([A-Z0-9]{1,2}-){7}[A-Z0-9]{1,2}$/);
-  } catch (e) { next(e) }
+  } catch (e) {
+    next(e)
+  }
   next();
 });
-deviceSchema.query.byNwk = function(nwk) {
-  return this.findOne({nwk});
+deviceSchema.query.byNwk = function (nwk) {
+  return this.findOne({
+    nwk
+  });
 };
-deviceSchema.static('joinApps', function (dbQuery={}, cb) {
+deviceSchema.static('joinApps', function (dbQuery = {}, cb) {
   const Device = this;
   const App = this.model('App');
-  co(function * () {
-    const devs = yield Device
-      .find(dbQuery)
-      .exec();
-    let result = devs.map(dev => dev.toObject());
-    for(let i=0; i<result.length; i++) {
-      let apps = yield App
-        .find()
-        .where('device').equals(result[i].nwk)
+  co(function* () {
+      const devs = yield Device
+        .find(dbQuery)
         .exec();
-      result[i].apps = apps.map(app => app.toObject());
-    }
-    return result;
-  })
+      let result = devs.map(dev => dev.toObject());
+      for (let i = 0; i < result.length; i++) {
+        let apps = yield App
+          .find()
+          .where('device').equals(result[i].nwk)
+          .exec();
+        result[i].apps = apps.map(app => app.toObject());
+      }
+      return result;
+    })
     .then(result => {
       cb(null, result);
     })
@@ -79,7 +85,10 @@ deviceSchema.static('joinApps', function (dbQuery={}, cb) {
 // ---------------------------------------
 
 const appSchema = new Schema({
-  device: {$type: Number, ref: deviceSchema.name },
+  device: {
+    $type: Number,
+    ref: deviceSchema.name
+  },
   endPoint: {
     $type: Number,
     min: 0,
@@ -126,69 +135,88 @@ const appSchema = new Schema({
 });
 appSchema.name = 'App';
 // app's validator
-appSchema.pre('validate', function(next) {
+appSchema.pre('validate', function (next) {
   const self = this;
-  const {endPoint, type, payload} = self;
-  if (type=='lamp') {
+  const {
+    endPoint,
+    type,
+    payload
+  } = self;
+  if (type == 'lamp') {
     try {
       expect(payload).to.have.property('on').that.is.a('boolean');
-    } catch(e) { next(e) }
-  }
-  else if (type=='gray-lamp') {
+    } catch (e) {
+      next(e)
+    }
+  } else if (type == 'gray-lamp') {
     try {
       expect(payload).to.have.property('level');
       expect(payload.level).to.be.a('number');
-      expect(payload.level).to.be.within(0,100);
-    } catch(e) { next(e) }
-  }
-  else if (type=='switch') {
+      expect(payload.level).to.be.within(0, 100);
+    } catch (e) {
+      next(e)
+    }
+  } else if (type == 'switch') {
     try {
       expect(payload).to.have.property('on').that.is.a('boolean')
-    } catch (e) { next(e) }
-  }
-  else if (type=='gray-switch') {
+    } catch (e) {
+      next(e)
+    }
+  } else if (type == 'gray-switch') {
     try {
       expect(payload).to.have.property('level').that.is.a('number');
-      expect(payload.level).to.be.within(0,100);
-    } catch (e) { next(e) }
-  }
-  else if (type=='pulse') {
+      expect(payload.level).to.be.within(0, 100);
+    } catch (e) {
+      next(e)
+    }
+  } else if (type == 'pulse') {
     try {
       expect(payload).to.have.property('transId').that.is.a('number')
-    } catch (e) { next(e) }
-  }
-  else if (type=='illuminance-sensor') {
+    } catch (e) {
+      next(e)
+    }
+  } else if (type == 'illuminance-sensor') {
     try {
       expect(payload).to.have.property('level').that.is.a('number');
-      const [low, high] = config['app/illuminance-sensor/range'];
+      const [low, high] = config.get('app_illuminance_sensor_range');
       expect(payload.level).to.be.within(low, high);
-    } catch (e) { next(e) }
-  }
-  else if (type=='temperature-sensor') {
+    } catch (e) {
+      next(e)
+    }
+  } else if (type == 'temperature-sensor') {
     try {
       expect(payload).to.have.property('temperature').that.is.a('number');
-      const [low, high] = config['app/temperature-sensor/range'];
+      const [low, high] = config.get('app_temperature_sensor_range');
       expect(payload.temperature).to.be.within(low, high);
-    } catch (e) { next(e) }
-  }
-  else if (type == 'occupy-sensor') {
+    } catch (e) {
+      next(e)
+    }
+  } else if (type == 'occupy-sensor') {
     try {
       expect(payload).to.have.property('occupy').that.is.a('boolean');
-    } catch (e) { next(e) }
-  }
-  else if (type == 'asr-sensor') {
+    } catch (e) {
+      next(e)
+    }
+  } else if (type == 'asr-sensor') {
     try {
       expect(payload).to.have.property('index').that.is.a('number');
-    } catch (e) { next(e) }
+    } catch (e) {
+      next(e)
+    }
   }
   next();
 });
 // query helper
 appSchema.query.byNwk = function (nwk) {
-  return this.find({ device: nwk, });
+  return this.find({
+    device: nwk,
+  });
 };
 appSchema.query.byNwkEp = function (nwk, ep) {
-  return this.findOne({ device: nwk, endPoint: ep});
+  return this.findOne({
+    device: nwk,
+    endPoint: ep
+  });
 };
 
 // export

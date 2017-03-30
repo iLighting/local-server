@@ -10,15 +10,17 @@ log4js.configure({
   appenders: [{
     type: 'logLevelFilter',
     level: 'INFO',
-    appender: { type: 'console' }
+    appender: {
+      type: 'console'
+    }
   }, {
     type: 'logLevelFilter',
-    level: config['log/level'],
+    level: config.get('log_level'),
     appender: {
       type: 'file',
-      filename: config['log/path'],
-      maxLogSize: config['log/maxLogSize'],
-      numBackups: config['log/numBackups']
+      filename: config.get('log_path'),
+      maxLogSize: config.get('log_maxLogSize'),
+      numBackups: config.get('log_numBackups')
     }
   }]
 });
@@ -38,7 +40,7 @@ module.exports = {
   socketIo: log4js.getLogger('socketIo'),
   staticScene: log4js.getLogger('staticScene'),
   zigbeeMediator: log4js.getLogger('zigbeeMediator'),
-  zigbee: log4js.getLogger('zigbee'),  
+  zigbee: log4js.getLogger('zigbee'),
   controller: log4js.getLogger('controller'),
   appFeedback: log4js.getLogger('appFeedback'),
   appAsr: log4js.getLogger('appAsr'),

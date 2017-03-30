@@ -1,0 +1,32 @@
+
+db_path: mongodb://localhost/test
+
+server_port: 3000
+localServer_port: 3001
+
+zigbee_bridgeEp: 8
+zigbee_appMsgCluster: 0xff00
+zigbee_appType_lamp: 0x0000
+zigbee_appType_gray_lamp: 0x0001
+zigbee_appType_switch: 0x0100
+zigbee_appType_gray_switch: 0x0101
+zigbee_appType_pulse: 0x0102
+zigbee_appType_illuminance_sensor: 0x0300
+zigbee_appType_temperature_sensor: 0x0301
+zigbee_appType_asr_sensor: 0x0302
+zigbee_appType_occupy_sensor: 0x0303
+
+app_illuminance_sensor_range:
+  - 0 
+  - 65535
+app_temperature_sensor_range:
+  - -50
+  - 100
+
+serial_path: /dev/ttyUSB0
+serial_rate: 38400
+
+log_path: logs_app.log
+log_maxLogSize: 10485760
+log_numBackups: 3
+log_level: TRACE

@@ -1,5 +1,7 @@
-const config = require('./config');
+const config = require('config');
 const launch = require('../src/launch');
+
+console.log(config)
 
 launch(config)
   .then(data => {

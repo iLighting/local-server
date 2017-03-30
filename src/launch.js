@@ -1,15 +1,20 @@
 const co = require('co');
 
 
-const launch = co.wrap(function * (config) {
+const launch = co.wrap(function* (config) {
   // 注入 config
   global.__config = config;
 
-  const { framework:log } = require('./utils/log');
+  const {
+    framework: log
+  } = require('./utils/log');
 
   // 初始化数据库
   // ------------------------
-  const { db, models } = yield require('./db').init(config['db/path']);
+  const {
+    db,
+    models
+  } = yield require('./db').init(config.get('db_path'));
   // mock数据库
   yield require('./mock/db')(models);
   log.debug('mock数据库');
@@ -27,14 +32,17 @@ const launch = co.wrap(function * (config) {
 
   // 初始化 local app server
   const localApp = require('./localApp');
-  localApp.listen(config['localServer/port'], 
-    process.env.NODE_ENV==='dev' ? '0.0.0.0' : 'localhost');
+  localApp.listen(config.get('localServer_port'),
+    process.env.NODE_ENV === 'dev' ? '0.0.0.0' : 'localhost');
 
   // 初始化Server
   // ------------------------
   const app = require('./app');
   app.context.mount = {
-    db, models, sys, controller
+    db,
+    models,
+    sys,
+    controller
   };
   const server = require('http').createServer(app.callback());
 
@@ -43,13 +51,18 @@ const launch = co.wrap(function * (config) {
   require('./sio')(io);
 
   // 启动
-  server.listen(config['server/port']);
-  log.info('应用启动成功，端口号 %s', config['server/port']);
+  server.listen(config.get('server_port'));
+  log.info('应用启动成功，端口号 %s', config.get('server_port'));
 
   // extra
   require('./libs/appAsr');
-  
-  return { db, models, sys, app };
+
+  return {
+    db,
+    models,
+    sys,
+    app
+  };
 });
 
 
