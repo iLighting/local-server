@@ -9,7 +9,7 @@
     "debug": "cross-env NODE_ENV=dev ./node_modules/.bin/node-debug ./bin/server.js",
     "debug-mock": "cross-env NODE_ENV=dev MOCK=true ./node_modules/.bin/node-debug ./bin/server.js",
     "doc": "./node_modules/.bin/jsdoc -c jsdoc.conf.json",
-    "test": "mocha --recursive test/"
+    "test": "mocha --recursive test/*-test.js"
   },
   "dependencies": {
     "babel-eslint": "^6.1.2",
@@ -17,6 +17,7 @@
     "babel-preset-stage-0": "^6.5.0",
     "body-parser": "~1.15.1",
     "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
     "co": "^4.6.0",
     "co-body": "^4.2.0",
     "config": "^1.25.1",
@@ -37,6 +38,7 @@
     "lodash": "^4.15.0",
     "log4js": "^0.6.38",
     "mocha": "^2.5.3",
+    "moment": "^2.18.1",
     "mongoose": "^4.5.4",
     "morgan": "~1.7.0",
     "promisify-node": "^0.4.0",
@@ -50,7 +52,7 @@
     "babel-core": "^6.10.4",
     "babel-preset-es2015": "^6.9.0",
     "jsdoc": "^3.4.0",
-    "mockjs": "^1.0.1-beta3",
+    "mockjs": "^3.2.0",
     "node-debug": "^0.1.0",
     "nodemon": "^1.10.2",
     "supertest": "^2.0.0"

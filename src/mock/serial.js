@@ -76,14 +76,25 @@ module.exports = function (serial) {
   //   frameSerial.put(frame(0x49, 0, [0,1, 8, 0xff,0, 2, 0,transId++]))
   // }, 5000);
 
-  // random illuminance
+  // 随机照度
   // setInterval(() => {
   //   serial.put(appMsg({
   //     cmd0: 0x49,
   //     cmd1: 0,
   //     nwk: 3,
   //     ep: 8,
-  //     pl: [1, _.random(100, 200), 0]
+  //     pl: [1, _.random(0, 200), 0]
+  //   }))
+  // }, 5000)
+
+  // 随机人体感应
+  // setInterval(() => {
+  //   serial.put(appMsg({
+  //     cmd0: 0x49,
+  //     cmd1: 0,
+  //     nwk: 5,
+  //     ep: 8,
+  //     pl: [1, _.random(0, 1)]
   //   }))
   // }, 5000)
 };

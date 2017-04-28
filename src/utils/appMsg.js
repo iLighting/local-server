@@ -13,7 +13,7 @@
 function objContain(m, keyList) {
   let i;
   let len = keyList.length;
-  for(i=0; i<len; i++) {
+  for (i = 0; i < len; i++) {
     if (!m.hasOwnProperty(keyList[i])) return false
   }
   return true;
@@ -27,7 +27,7 @@ const lamp = {
    */
   build(payload) {
     if (objContain(payload, ['on'])) {
-      return Buffer.from([0, payload.on ? 1:0]);      
+      return Buffer.from([0, payload.on ? 1 : 0]);
     }
   },
   /**
@@ -40,10 +40,14 @@ const lamp = {
     switch (cmdId) {
       // turn
       case 0:
-        return ['turn', {on: !!buf.readUInt8(1)}];
-      // turn feedback
+        return ['turn', {
+          on: !!buf.readUInt8(1)
+        }];
+        // turn feedback
       case 1:
-        return ['turnFeedback', {on: !!buf.readUInt8(1)}];
+        return ['turnFeedback', {
+          on: !!buf.readUInt8(1)
+        }];
       default:
         return ['unknow', cmdId]
     }
@@ -59,7 +63,7 @@ const grayLamp = {
    */
   build(payload) {
     if (objContain(payload, ['level'])) {
-      return Buffer.from([0, payload.level]);      
+      return Buffer.from([0, payload.level]);
     }
   },
   /**
@@ -72,10 +76,14 @@ const grayLamp = {
     switch (cmdId) {
       // change
       case 0:
-        return ['change', {level: buf.readUInt8(1)}];
-      // change feedback
+        return ['change', {
+          level: buf.readUInt8(1)
+        }];
+        // change feedback
       case 1:
-        return ['changeFeedback', {level: buf.readUInt8(1)}];
+        return ['changeFeedback', {
+          level: buf.readUInt8(1)
+        }];
       default:
         return ['unknow', cmdId];
     }
@@ -89,7 +97,9 @@ const pulse = {
     switch (cmdId) {
       // pulse feedback
       case 0:
-        return ['pulseFeedback', {transId: buf.readUInt8(1)}];
+        return ['pulseFeedback', {
+          transId: buf.readUInt8(1)
+        }];
       default:
         return [];
     }
@@ -106,7 +116,9 @@ const temperatureSensor = {
     switch (cmdId) {
       // temperature feedback
       case 1:
-        return ['temperatureFeedback', { temperature: buf.readInt16LE(1) / 100 }];
+        return ['temperatureFeedback', {
+          temperature: buf.readInt16LE(1) / 100
+        }];
       default:
         return ['unknow', cmdId];
     }
@@ -123,13 +135,34 @@ const illuminanceSensor = {
     switch (cmdId) {
       // light feedback
       case 1:
-        return ['illuminanceFeedback', { level: buf.readUInt16LE(1) }];
+        return ['illuminanceFeedback', {
+          level: buf.readUInt16LE(1)
+        }];
       default:
         return ['unknow', cmdId];
     }
   }
 };
 Object.freeze(illuminanceSensor);
+
+const occupySensor = {
+  build(payload) {
+    return Buffer.from([0]);
+  },
+  parse(buf) {
+    const cmdId = buf.readUInt8(0);
+    switch (cmdId) {
+      // occupy feedback
+      case 1:
+        return ['occupyFeedback', {
+          occupy: !!buf.readUInt8(1)
+        }];
+      default:
+        return ['unknow', cmdId];
+    }
+  }
+};
+Object.freeze(occupySensor);
 
 const asrSensor = {
   build(payload) {
@@ -141,7 +174,9 @@ const asrSensor = {
     switch (cmdId) {
       // asr feedback
       case 1:
-        return ['asrFeedback', { result0: buf.readUInt8(1) }];
+        return ['asrFeedback', {
+          result0: buf.readUInt8(1)
+        }];
       default:
         return ['unknow', cmdId];
     }
@@ -155,5 +190,6 @@ module.exports = {
   pulse,
   'temperature-sensor': temperatureSensor,
   'illuminance-sensor': illuminanceSensor,
+  'occupy-sensor': occupySensor,
   'asr-sensor': asrSensor,
 };

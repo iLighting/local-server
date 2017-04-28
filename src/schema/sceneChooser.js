@@ -1,12 +1,15 @@
 const co = require('co');
 const expect = require('chai').expect;
-const { Schema } = require('mongoose');
+const {
+  Schema
+} = require('mongoose');
 const _ = require('lodash');
 const mix = require('../utils/mix');
 
 const judgeRuleGroupSchema = new Schema({
   name: String,
   scene: Schema.Types.ObjectId,
+  timeRange: [],
   rules: [],
 }, {
   timestamps: true,
@@ -22,18 +25,24 @@ const judgeRuleGroupSchema = new Schema({
   minimize: false,
 });
 judgeRuleGroupSchema.name = 'JudgeRuleGroup';
-judgeRuleGroupSchema.ruleTypes = [    // 全部是闭合区间
+judgeRuleGroupSchema.ruleTypes = [ // 全部是闭合区间
   'equal', 'nequal',
   'range', 'nrange',
   'gt', 'lt',
   'ignore'
 ];
 judgeRuleGroupSchema.pre('validate', function (next) {
-  const {scene, rules} = this;
+  const {
+    scene,
+    timeRange,
+    rules
+  } = this;
   const ruleTypes = judgeRuleGroupSchema.ruleTypes;
   try {
+    expect(timeRange).to.be.an('array');
+    expect(timeRange).to.have.lengthOf(2);
     expect(rules).to.be.a('array');
-    for(let i=0; i<rules.length; i++) {
+    for (let i = 0; i < rules.length; i++) {
       const rule = rules[i];
       // property: ieee
       expect(rule).to.have.property('ieee').that.is.a('string');
@@ -56,7 +65,9 @@ judgeRuleGroupSchema.pre('validate', function (next) {
       }
     }
     next();
-  } catch(e) { next(e) }
+  } catch (e) {
+    next(e)
+  }
 });
 
 module.exports = {

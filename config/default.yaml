@@ -26,7 +26,8 @@ app_temperature_sensor_range:
 serial_path: /dev/ttyUSB0
 serial_rate: 38400
 
-log_path: logs_app.log
+log_path: logs/app.log
 log_maxLogSize: 10485760
 log_numBackups: 3
 log_level: TRACE
+log_console: true

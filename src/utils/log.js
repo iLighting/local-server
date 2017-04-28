@@ -6,14 +6,8 @@ const log4js = require('log4js');
 
 const config = global.__config;
 
-log4js.configure({
+const logConfig = {
   appenders: [{
-    type: 'logLevelFilter',
-    level: 'INFO',
-    appender: {
-      type: 'console'
-    }
-  }, {
     type: 'logLevelFilter',
     level: config.get('log_level'),
     appender: {
@@ -23,7 +17,19 @@ log4js.configure({
       numBackups: config.get('log_numBackups')
     }
   }]
-});
+};
+
+if (!!config.get('log_console')) {
+  logConfig.appenders.push({
+    type: 'logLevelFilter',
+    level: 'INFO',
+    appender: {
+      type: 'console'
+    }
+  })
+}
+
+log4js.configure(logConfig);
 
 module.exports = {
   framework: log4js.getLogger('framework'),

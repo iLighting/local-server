@@ -206,6 +206,12 @@ const areqParserMap = {
                 temperature: 0
               };
               break;
+            case config.get('zigbee_appType_occupy_sensor'):
+              type = 'occupy-sensor';
+              payload = {
+                occupy: false
+              };
+              break;
             case config.get('zigbee_appType_asr_sensor'):
               type = 'asr-sensor';
               payload = {

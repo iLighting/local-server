@@ -2,6 +2,8 @@
  * 由传感器结果集选择场景
  */
 
+const moment = require('moment');
+
 const {
   EventEmitter
 } = require('events');
@@ -65,7 +67,7 @@ const getNormalizedSensorResults = co.wrap(function* () {
 })
 
 /**
- * 根据传感器数据集，选择sid
+ * 根据传感器数据集和时间，选择sid
  * @return {Promise} - sid or false
  */
 const selectSceneId = co.wrap(function* () {
@@ -78,8 +80,14 @@ const selectSceneId = co.wrap(function* () {
   for (let i = 0; i < allGroups.length; i++) {
     const {
       scene,
+      timeRange,
       rules
     } = allGroups[i];
+    // 过滤时间约束
+    timeRange_0 = moment(timeRange[0], 'HH:mm');
+    timeRange_1 = moment(timeRange[1], 'HH:mm');
+    timeNow = moment();
+    if (timeRange_0.unix() >= timeNow || timeNow >= timeRange_1) continue;
     let j = 0;
     for (j = 0; j < rules.length; j++) {
       log.trace('取出rule\n', rules[i]);
@@ -145,29 +153,31 @@ const selectSceneId = co.wrap(function* () {
  * @fires change - sid
  */
 class Chooser extends EventEmitter {
-  constructor() {
-    super();
-    appFeedback.on('handle', this._handleSensorFeedback.bind(this));
-  }
-
-  _handleSensorFeedback({
-    nwk,
-    ep,
-    type,
-    payload
-  }) {
+  /**
+   * 选择场景
+   * 
+   * @return {Promise} sid
+   * @memberOf Chooser
+   */
+  choose() {
     const self = this;
-    if (type.indexOf('-sensor') < 0) return;
-    co(function* () {
-      log.trace('开始选择场景');
-      const sid = yield selectSceneId();
-      if (sid) {
-        yield controller.setScene(sid);
-        log.info(`set sid=${sid}`);
-        self.emit('change', sid);
-      }
-    }).catch(err => log.error(err));
+    return co.wrap(function* () {
+        log.trace('开始选择场景');
+        const sid = yield selectSceneId();
+        if (sid) {
+          yield controller.setScene(sid);
+          log.info(`set sid=${sid}`);
+          self.emit('change', sid);
+        }
+      })()
+      .catch(err => log.error(err));
   }
 }
+
+const chooser = new Chooser();
+// 传感器触发
+appFeedback.on('handle', () => chooser.choose());
+// 时间间隔触发 1min
+setInterval(() => chooser.choose(), 1000 * 60);
 
 module.exports = new Chooser();

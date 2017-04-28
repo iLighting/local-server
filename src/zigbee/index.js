@@ -1,7 +1,16 @@
 const co = require('co');
-const { EventEmitter } = require('events');
-const { zigbee: log } = require('../utils/log');
-const { parseFrame, cmdMap, parser, builder } = require('../utils/mt');
+const {
+  EventEmitter
+} = require('events');
+const {
+  zigbee: log
+} = require('../utils/log');
+const {
+  parseFrame,
+  cmdMap,
+  parser,
+  builder
+} = require('../utils/mt');
 const frameSerial = require('./frameSerial');
 
 
@@ -14,7 +23,9 @@ const frameSerial = require('./frameSerial');
  * @fires error
  */
 class Zigbee extends EventEmitter {
-  constructor({serial}) {
+  constructor({
+    serial
+  }) {
     super();
     this._serial = serial;
     this._writeQueue = [];
@@ -34,7 +45,10 @@ class Zigbee extends EventEmitter {
    * @private
    */
   _handleFrameData(buf) {
-    const { cmd0, cmd1 } = parseFrame(buf);
+    const {
+      cmd0,
+      cmd1
+    } = parseFrame(buf);
     let isAreqFlag = cmdMap.checkAreq(cmd0);
     /**
      * @event areq
@@ -80,7 +94,7 @@ class Zigbee extends EventEmitter {
       setTimeout(() => {
         this.flushWriteQueue();
         this._isQueueing = false;
-      }, 10);
+      }, 1);
     }
   }
 
@@ -94,7 +108,10 @@ class Zigbee extends EventEmitter {
    */
   write(name, props) {
     return new Promise((resolve, reject) => {
-      this._writeQueue.push([name, props, {resolve, reject}]);
+      this._writeQueue.push([name, props, {
+        resolve,
+        reject
+      }]);
       this.launchWriteLoop();
     })
   }
@@ -109,6 +126,3 @@ ins.setMaxListeners(0);
 ins.launchWriteLoop();
 
 module.exports = ins;
-
-
-

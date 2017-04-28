@@ -101,7 +101,29 @@ const devDesc = [{
 ];
 
 const sceneDesc = [{
-    name: '场景1',
+    name: '开灯',
+    items: [{
+      ieee: '00-00-00-00-00-00-00-00',
+      ep: 8,
+      scenePayload: {
+        on: true
+      }
+    }, {
+      ieee: '00-00-00-00-00-00-00-01',
+      ep: 8,
+      scenePayload: {
+        on: true
+      }
+    }, {
+      ieee: '7-AC-47-6-0-4B-12-0',
+      ep: 8,
+      scenePayload: {
+        on: true
+      }
+    }]
+  },
+  {
+    name: '关灯',
     items: [{
       ieee: '00-00-00-00-00-00-00-00',
       ep: 8,
@@ -110,6 +132,12 @@ const sceneDesc = [{
       }
     }, {
       ieee: '00-00-00-00-00-00-00-01',
+      ep: 8,
+      scenePayload: {
+        on: false
+      }
+    }, {
+      ieee: '7-AC-47-6-0-4B-12-0',
       ep: 8,
       scenePayload: {
         on: false
@@ -129,13 +157,24 @@ const sceneDesc = [{
 ];
 
 const judgeRuleGroupDesc = [{
-  name: '选择器1',
+  name: '低照度开灯',
   sceneIndex: 0,
+  timeRange: ['18:00', '23:59'],
   rules: [{
     ieee: '00-00-00-00-00-00-01-00',
     ep: 8,
     type: 'lt',
-    payload: 150
+    payload: 100
+  }]
+}, {
+  name: '高照度关灯',
+  sceneIndex: 1,
+  timeRange: ['05:00', '10:00'],
+  rules: [{
+    ieee: '00-00-00-00-00-00-01-00',
+    ep: 8,
+    type: 'gt',
+    payload: 100
   }]
 }]
 
@@ -205,12 +244,14 @@ module.exports = function* mock(models) {
     const {
       name,
       sceneIndex,
+      timeRange,
       rules
     } = judgeRuleGroupDesc[i];
     const sceneList = yield StaticScene.find().exec();
     yield JudgeRuleGroup.create({
       name,
       scene: sceneList[i].id,
+      timeRange,
       rules
     })
   }
