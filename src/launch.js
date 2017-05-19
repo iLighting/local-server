@@ -15,9 +15,12 @@ const launch = co.wrap(function* (config) {
     db,
     models
   } = yield require('./db').init(config.get('db_path'));
+
   // mock数据库
-  yield require('./mock/db')(models);
-  log.debug('mock数据库');
+  if (process.env.MOCK === 'true') {
+    yield require('./mock/db')(models);
+    log.debug('mock数据库');
+  }
 
   // 初始化系统状态
   // ------------------------
@@ -26,6 +29,12 @@ const launch = co.wrap(function* (config) {
       mode: 'manual'
     }
   });
+
+  // 初始化场景配置
+  // ------------------------
+  const SceneProvider = require('./utils/sceneProvider');
+  const provider = new SceneProvider(models);
+  yield provider.default();
 
   // -----------------------
   const controller = require('./libs/controller');

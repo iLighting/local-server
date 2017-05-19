@@ -2,7 +2,7 @@ let nwk = 0;
 
 const devDesc = [{
     nwk: nwk,
-    ieee: '00-00-00-00-00-00-00-00',
+    ieee: '40-73-29-6-0-4B-12-0',
     type: 'router',
     name: `router@${nwk++}`,
     apps: [{
@@ -16,7 +16,7 @@ const devDesc = [{
   },
   {
     nwk: nwk,
-    ieee: '00-00-00-00-00-00-00-01',
+    ieee: '40-73-29-6-0-4B-12-1',
     type: 'router',
     name: `router@${nwk++}`,
     apps: [{
@@ -30,7 +30,7 @@ const devDesc = [{
   },
   {
     nwk: nwk,
-    ieee: '00-00-00-00-00-00-00-02',
+    ieee: '4F-AC-47-6-0-4B-12-2',
     type: 'router',
     name: `router@${nwk++}`,
     apps: [{
@@ -44,7 +44,7 @@ const devDesc = [{
   },
   {
     nwk: nwk,
-    ieee: '00-00-00-00-00-00-01-00',
+    ieee: '73-4F-15-1-0-4B-12-0',
     type: 'router',
     name: `router@${nwk++}`,
     apps: [{
@@ -58,7 +58,7 @@ const devDesc = [{
   },
   {
     nwk: nwk,
-    ieee: '00-00-00-00-00-00-01-01',
+    ieee: '7-AC-47-6-0-4B-12-0',
     type: 'router',
     name: `router@${nwk++}`,
     apps: [{
@@ -72,7 +72,7 @@ const devDesc = [{
   },
   {
     nwk: nwk,
-    ieee: '00-00-00-00-00-00-01-02',
+    ieee: '4F-AC-47-6-0-4B-12-0',
     type: 'router',
     name: `router@${nwk++}`,
     apps: [{
@@ -86,7 +86,7 @@ const devDesc = [{
   },
   {
     nwk: nwk,
-    ieee: '00-00-00-00-00-00-01-03',
+    ieee: '29-1-4C-1-0-4B-12-0',
     type: 'router',
     name: `router@${nwk++}`,
     apps: [{
@@ -178,8 +178,7 @@ const judgeRuleGroupDesc = [{
   }]
 }]
 
-module.exports = function* mock(models) {
-  // 清空数据库
+function* clearAll(models) {
   const {
     Device,
     App,
@@ -192,7 +191,13 @@ module.exports = function* mock(models) {
   yield StaticScene.remove().exec();
   yield StaticSceneItem.remove().exec();
   yield JudgeRuleGroup.remove().exec();
+}
 
+function* mockDevice(models) {
+  const {
+    Device,
+    App,
+  } = models;
   // create devices
   for (let i = 0; i < devDesc.length; i++) {
     const {
@@ -220,6 +225,13 @@ module.exports = function* mock(models) {
     }
   }
 
+}
+
+function* mockScene(models) {
+  const {
+    StaticScene,
+    StaticSceneItem,
+  } = models;
   // create scene
   for (let i = 0; i < sceneDesc.length; i++) {
     const {
@@ -238,7 +250,12 @@ module.exports = function* mock(models) {
       })
     }
   }
+}
 
+function* mockRule(models) {
+  const {
+    JudgeRuleGroup
+  } = models;
   // create judgeRuleGroupSchema
   for (let i = 0; i < judgeRuleGroupDesc.length; i++) {
     const {
@@ -255,4 +272,9 @@ module.exports = function* mock(models) {
       rules
     })
   }
+}
+
+module.exports = function* mock(models) {
+  yield clearAll(models)
+  yield mockDevice(models)
 };

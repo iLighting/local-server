@@ -97,4 +97,15 @@ module.exports = function (serial) {
   //     pl: [1, _.random(0, 1)]
   //   }))
   // }, 5000)
+
+  // 随机ASR
+  setInterval(() => {
+    serial.put(appMsg({
+      cmd0: 0x49,
+      cmd1: 0,
+      nwk: 6,
+      ep: 8,
+      pl: [1, _.random(0, 7)]
+    }))
+  }, 5000)
 };

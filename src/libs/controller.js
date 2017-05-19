@@ -63,6 +63,37 @@ function sendAppMsg(nwk, ep, payload) {
   })();
 }
 
+/**
+ * set scene
+ * 
+ * @param {String} sid 
+ * @returns {Promise}
+ */
+function setScene(sid) {
+  return co.wrap(function* () {
+    const {
+      Device,
+      StaticScene
+    } = models;
+    const [
+      [scene]
+    ] = yield mix.wrap2ReturnPromise(StaticScene.joinItems.bind(StaticScene))({
+      _id: sid
+    });
+    for (let i = 0; i < scene.items.length; i++) {
+      const {
+        ieee,
+        ep,
+        scenePayload
+      } = scene.items[i];
+      const dev = yield Device.findOne({
+        ieee
+      }).exec();
+      yield sendAppMsg(dev.nwk, ep, scenePayload);
+    }
+  })();
+}
+
 class StateControllerBase {
   setAppPayload(nwk, ep, payload) {
     throw new Error('未定义')
@@ -103,28 +134,7 @@ class StaticController extends StateControllerBase {
    * @return {Promise}
    */
   setScene(sid) {
-    return co.wrap(function* (self) {
-      const {
-        Device,
-        StaticScene
-      } = models;
-      const [
-        [scene]
-      ] = yield mix.wrap2ReturnPromise(StaticScene.joinItems.bind(StaticScene))({
-        _id: sid
-      });
-      for (let i = 0; i < scene.items.length; i++) {
-        const {
-          ieee,
-          ep,
-          scenePayload
-        } = scene.items[i];
-        const dev = yield Device.findOne({
-          ieee
-        }).exec();
-        yield sendAppMsg(dev.nwk, ep, scenePayload);
-      }
-    })(this);
+    return setScene(sid)
   }
 
   setAppPayload() {
@@ -192,6 +202,20 @@ class Controller extends EventEmitter {
   setScene(sid) {
     log.info(`setScene ${sid}`);
     return this._targetIns.setScene(sid).then(() => sys.mergeSysIn('status', {
+      sceneId: sid
+    }))
+  }
+  /**
+   * 强制设置场景
+   * 
+   * @param {String} sid 
+   * @returns 
+   * 
+   * @memberof Controller
+   */
+  forceSetScene(sid) {
+    log.info('force set sid to', sid);
+    return setScene(sid).then(() => sys.mergeSysIn('status', {
       sceneId: sid
     }))
   }

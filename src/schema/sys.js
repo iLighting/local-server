@@ -1,5 +1,7 @@
 //noinspection JSUnresolvedVariable
-const { Schema } = require('mongoose');
+const {
+  Schema
+} = require('mongoose');
 
 const sysStatus = new Schema({
   status: {
@@ -27,16 +29,26 @@ const sysStatus = new Schema({
 });
 sysStatus.name = 'SysStatus';
 sysStatus.pre('save', function (next) {
-  if (typeof sysStatus._saved == 'undefined') { sysStatus._saved = false }
+  if (typeof sysStatus._saved == 'undefined') {
+    sysStatus._saved = false
+  }
   if (sysStatus._saved) {
     next(new Error('sys status 只能有一个'))
-  } else { next() }
+  } else {
+    next()
+  }
 });
 
 const sys = new Schema({
+  // 系统状态
   status: {
     type: Schema.Types.Mixed,
     default: {}
+  },
+  // 是否出厂模式
+  isFactoryNew: {
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,
@@ -52,10 +64,14 @@ const sys = new Schema({
 });
 sys.name = 'Sys';
 sys.pre('save', function (next) {
-  if (typeof sys._saved == 'undefined') { sys._saved = false }
+  if (typeof sys._saved == 'undefined') {
+    sys._saved = false
+  }
   if (sys._saved) {
     next(new Error('sys 只能有一个'))
-  } else { next() }
+  } else {
+    next()
+  }
 });
 
 module.exports = {

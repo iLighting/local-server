@@ -108,6 +108,10 @@ const selectSceneId = co.wrap(function* () {
         }).exec();
         if (app) {
           log.trace('检测APP\n', app);
+          // skip asr-sensor
+          if (app.type === 'asr-sensor') {
+            continue
+          }
           let ruleMatch = false;
           const appPayloadValue = app.payload[Object.keys(app.payload)[0]];
           switch (type) {
@@ -159,10 +163,14 @@ class Chooser extends EventEmitter {
    * @return {Promise} sid
    * @memberOf Chooser
    */
-  choose() {
+  choose(app) {
     const self = this;
     return co.wrap(function* () {
         log.trace('开始选择场景');
+        // skip asr-sensor
+        if (app.type === 'asr-sensor') {
+          return
+        }
         const sid = yield selectSceneId();
         if (sid) {
           yield controller.setScene(sid);
@@ -176,7 +184,7 @@ class Chooser extends EventEmitter {
 
 const chooser = new Chooser();
 // 传感器触发
-appFeedback.on('handle', () => chooser.choose());
+appFeedback.on('handle', app => chooser.choose(app));
 // 时间间隔触发 1min
 setInterval(() => chooser.choose(), 1000 * 60);
 
