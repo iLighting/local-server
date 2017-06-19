@@ -16,13 +16,11 @@ const launch = co.wrap(function* (config) {
     models
   } = yield(require('./db').init(config.get('db_path')));
 
-  if (config.get('debug')) {
-    const modelsName = Object.keys(models);
-    for (let i = 0; i < modelsName.length; i++) {
-      yield models[modelsName[i]].remove().exec()
-    }
-    log.info('db has been cleared:', modelsName.join(','))
+  const modelsName = Object.keys(models);
+  for (let i = 0; i < modelsName.length; i++) {
+    yield models[modelsName[i]].remove().exec()
   }
+  log.info('db has been cleared:', modelsName.join(','))
 
   // mock数据库
   if (config.get('debug')) {
