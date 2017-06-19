@@ -1,13 +1,23 @@
-const { Writable } = require('stream');
-const { frameSerial: log } = require('../utils/log');
-const { shiftFrameFromBuf } = require('../utils/mt');
+const {
+  Writable
+} = require('stream');
+const {
+  frameSerial: log
+} = require('../utils/log');
+const {
+  shiftFrameFromBuf
+} = require('../utils/mt');
+
+const config = global.__config;
 
 /**
  * @fires data
  * @fires error
  */
 class FrameSerial extends Writable {
-  constructor({serial}) {
+  constructor({
+    serial
+  }) {
     super();
     this._tempChunk = null;
     this._serial = serial;
@@ -45,9 +55,13 @@ class FrameSerial extends Writable {
 
   _write(chunk, encoding, callback) {
     this._serial.write(chunk, err => {
-      if (err) { callback(err) } else {
+      if (err) {
+        callback(err)
+      } else {
         this._serial.drain(err => {
-          if (err) { callback(err) } else {
+          if (err) {
+            callback(err)
+          } else {
             log.trace('已写入串口', chunk);
             callback();
           }
@@ -59,5 +73,5 @@ class FrameSerial extends Writable {
 }
 
 module.exports = new FrameSerial({
-  serial: process.env.MOCK === 'true' ? require('./hardware/serialMock') : require('./hardware/serial')
+  serial: config.get('debug') ? require('./hardware/serialMock') : require('./hardware/serial')
 });

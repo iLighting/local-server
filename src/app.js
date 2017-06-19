@@ -9,6 +9,8 @@ const {
 
 const app = koa();
 
+const config = global.__config;
+
 // compress
 // ==============================
 
@@ -73,11 +75,11 @@ app.use(
 // TODO: 加入生产模式控制
 const pug = new Pug({
   viewPath: path.join(__dirname, 'views'),
-  debug: !(process.env.NODE_ENV === 'prod'),
+  debug: config.get('debug'),
   pretty: false,
-  compileDebug: !(process.env.NODE_ENV === 'prod'),
+  compileDebug: config.get('debug'),
   locals: {},
-  noCache: process.env.NODE_ENV === 'prod',
+  noCache: !config.get('debug'),
   // basedir: 'path/for/pug/extends',
   // helperPath: [
   //   'path/to/pug/helpers',

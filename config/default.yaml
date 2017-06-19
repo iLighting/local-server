@@ -31,3 +31,5 @@ log_maxLogSize: 10485760
 log_numBackups: 3
 log_level: TRACE
 log_console: true
+
+debug: false

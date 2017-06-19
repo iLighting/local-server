@@ -16,7 +16,7 @@ const launch = co.wrap(function* (config) {
     models
   } = yield(require('./db').init(config.get('db_path')));
 
-  if (process.env.NODE_ENV === 'dev') {
+  if (config.get('debug')) {
     const modelsName = Object.keys(models);
     for (let i = 0; i < modelsName.length; i++) {
       yield models[modelsName[i]].remove().exec()
@@ -25,7 +25,7 @@ const launch = co.wrap(function* (config) {
   }
 
   // mock数据库
-  if (process.env.MOCK === 'true') {
+  if (config.get('debug')) {
     yield require('./mock/db')(models);
     log.debug('mock数据库');
   }
@@ -50,7 +50,7 @@ const launch = co.wrap(function* (config) {
   // 初始化 local app server
   const localApp = require('./localApp');
   localApp.listen(config.get('localServer_port'),
-    process.env.NODE_ENV === 'dev' ? '0.0.0.0' : 'localhost');
+    config.get('debug') ? '0.0.0.0' : 'localhost');
 
   // 初始化Server
   // ------------------------

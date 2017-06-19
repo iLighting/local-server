@@ -2,11 +2,15 @@ const koa = require('koa');
 const path = require('path');
 const Pug = require('koa-pug')
 const send = require('koa-send');
-const { localApp: log } = require('../utils/log');
+const {
+  localApp: log
+} = require('../utils/log');
 
 const app = koa();
 
-app.use(function * (next) {
+const config = global.__config;
+
+app.use(function* (next) {
   log.debug(this.request.method, this.request.url);
   yield next;
 });
@@ -15,7 +19,7 @@ app.use(function * (next) {
 // ====================================
 
 app.use(
-  function * (next) {
+  function* (next) {
     const urlPath = this.request.path;
     if (urlPath.indexOf('/assets') === 0) {
       yield send(this, urlPath, {
@@ -34,11 +38,11 @@ app.use(
 // TODO: 加入生产模式控制
 const pug = new Pug({
   viewPath: path.join(__dirname, 'views'),
-  debug: !(process.env.NODE_ENV === 'prod'),
+  debug: config.get('debug'),
   pretty: false,
-  compileDebug: !(process.env.NODE_ENV === 'prod'),
+  compileDebug: config.get('debug'),
   locals: {},
-  noCache: process.env.NODE_ENV === 'prod'
+  noCache: !config.get('debug')
 });
 
 pug.use(app);
@@ -48,7 +52,7 @@ pug.use(app);
 
 app.use(require('./routers'));
 
-app.use(function * (next) {
+app.use(function* (next) {
   this.throw(404, '路由未定义')
 });
 

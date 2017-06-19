@@ -3,11 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "launch": "cross-env NODE_ENV=prod node ./bin/server.js",
-    "dev": "cross-env NODE_ENV=dev nodemon --watch ./config --watch ./src --watch ./bin ./bin/server.js",
-    "mock": "cross-env NODE_ENV=dev MOCK=true nodemon --watch ./config --watch ./src --watch ./bin ./bin/server.js",
-    "debug": "cross-env NODE_ENV=dev ./node_modules/.bin/node-debug ./bin/server.js",
-    "debug-mock": "cross-env NODE_ENV=dev MOCK=true ./node_modules/.bin/node-debug ./bin/server.js",
+    "daemonize": "pm2 start ./bin/server.js",
+    "start": "node ./bin/server.js",
+    "dev": "nodemon --watch ./config --watch ./src --watch ./bin ./bin/server.js",
+    "mock": "nodemon --watch ./config --watch ./src --watch ./bin ./bin/server.js",
     "doc": "./node_modules/.bin/jsdoc -c jsdoc.conf.json",
     "test": "mocha --recursive test/*-test.js"
   },
