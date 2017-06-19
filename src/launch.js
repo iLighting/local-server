@@ -14,7 +14,15 @@ const launch = co.wrap(function* (config) {
   const {
     db,
     models
-  } = yield require('./db').init(config.get('db_path'));
+  } = yield(require('./db').init(config.get('db_path')));
+
+  if (process.env.NODE_ENV === 'dev') {
+    const modelsName = Object.keys(models);
+    for (let i = 0; i < modelsName.length; i++) {
+      yield models[modelsName[i]].remove().exec()
+    }
+    log.info('db has been cleared:', modelsName.join(','))
+  }
 
   // mock数据库
   if (process.env.MOCK === 'true') {

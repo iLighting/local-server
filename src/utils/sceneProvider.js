@@ -27,7 +27,7 @@ class Provider extends Object {
   default () {
     const ieee = {
       lamp: '40-73-29-6-0-4B-12-0',
-      grayLamp: '4F-AC-47-6-0-4B-12-2',
+      grayLamp: 'D8-2-4C-1-0-4B-12-0',
       occupy: '4F-AC-47-6-0-4B-12-0',
       temperature: '7-AC-47-6-0-4B-12-0',
       illuminance: '73-4F-15-1-0-4B-12-0',

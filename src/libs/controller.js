@@ -89,7 +89,11 @@ function setScene(sid) {
       const dev = yield Device.findOne({
         ieee
       }).exec();
-      yield sendAppMsg(dev.nwk, ep, scenePayload);
+      if (dev) {
+        yield sendAppMsg(dev.nwk, ep, scenePayload);
+      } else {
+        log.warn(`device at ${ieee} is missing`)
+      }
     }
   })();
 }
