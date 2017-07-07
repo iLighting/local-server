@@ -10,6 +10,22 @@
 
 ## 树莓派安装
 
+## eth0
+
+Append `/etc/dhcpcd.conf`
+
+```
+interface eth0
+static routers=192.168.9.1
+inform 192.168.9.2
+```
+
+## 切换视频输出
+
+```bash
+vim /usr/share/X11/xorg.conf.d/99-fbturbo.conf
+```
+
 ### chromium自启动
 
 ```bash

@@ -355,15 +355,13 @@ class Mediator extends Writable {
       this._zigbee.once('srspParsed', onSrspParsed);
       this._zigbee.write(name, props)
         .then(() => {
-          // TODO: dose not delete the listener even when timeout
-          if (this._zigbee.listeners('srspParsed').indexOf(onSrspParsed) >= 0) {
+          setTimeout(() => {
             // 3s后删除监听器，防止srsp超时引发内存泄漏
-            setTimeout(() => {
+            if (this._zigbee.listeners('srspParsed').indexOf(onSrspParsed) >= 0) {
               this._zigbee.removeListener('srspParsed', onSrspParsed);
               log.warn(`${name} srsp 超时，删除监听器`);
-              // callback(new Error(`${name} srsp 超时`));
-            }, 3000)
-          }
+            }
+          }, 3000)
         })
         .catch(callback);
     } catch (e) {

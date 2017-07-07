@@ -184,7 +184,11 @@ class Chooser extends EventEmitter {
 
 const chooser = new Chooser();
 // 传感器触发
-appFeedback.on('handle', app => chooser.choose(app));
+appFeedback.on('handle', app => {
+  if (app) {
+    chooser.choose(app)
+  } else log.fatal('app is undefined. I don\'t know why')
+});
 // 时间间隔触发 1min
 setInterval(() => chooser.choose(), 1000 * 60);
 
